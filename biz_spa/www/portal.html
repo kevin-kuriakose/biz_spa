@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Biz Spa</title>
+	<link rel="stylesheet" href="/assets/biz_spa/portal/portal.css">
+</head>
+<body>
+	<div id="sprite"></div>
+	<div id="app"></div>
+	<div id="toasts" role="status" aria-live="polite"></div>
+	<script>window.PORTAL = { csrf: {{ csrf_token | tojson }}, loggedIn: {{ "true" if logged_in else "false" }} };</script>
+	<script src="/assets/biz_spa/portal/portal.js"></script>
+</body>
+</html>

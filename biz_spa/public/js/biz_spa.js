@@ -52,3 +52,33 @@ new MutationObserver(() => biz_spa.decorate_cards()).observe(document.documentEl
 	childList: true,
 	subtree: true,
 });
+
+// Spa staff are sent home from any Desk page they cannot open, such as a route left over from
+// another login, instead of seeing the raw permission error. System Managers are unaffected.
+// Wrapped at load time because Desk renders the first route before document ready.
+biz_spa.user_roles = () => (frappe.boot && frappe.boot.user && frappe.boot.user.roles) || [];
+
+biz_spa.is_staff_only = function () {
+	const roles = biz_spa.user_roles();
+	return roles.some((role) => role.startsWith("Spa ")) && !roles.includes("System Manager");
+};
+
+biz_spa.can_open_page = function (name) {
+	return !name || frappe.standard_pages[name] || (frappe.boot.page_info && frappe.boot.page_info[name]);
+};
+
+biz_spa.go_home = function () {
+	frappe.show_alert({ message: __("That page isn't available for your role."), indicator: "orange" });
+	frappe.set_route("Workspaces", biz_spa.user_roles().includes("Spa Therapist") ? "My Spa" : "Biz Spa");
+};
+
+if (frappe.views && frappe.views.pageview) {
+	const show_page = frappe.views.pageview.show;
+	frappe.views.pageview.show = function (name) {
+		if (biz_spa.is_staff_only() && !biz_spa.can_open_page(name)) {
+			biz_spa.go_home();
+			return;
+		}
+		return show_page.call(this, name);
+	};
+}
