@@ -1,0 +1,149 @@
+/* Biz Spa theme: Bizaxl Design System mapped onto Frappe Desk.
+   Everything except @font-face is scoped to body.biz-spa, which biz_spa.js sets on Biz Spa
+   routes only, so ERPNext and the other apps on this site keep their own look. */
+@font-face { font-family: "DM Sans"; font-weight: 400; font-display: swap; src: url("/assets/biz_spa/fonts/dm-sans-latin-400-normal.woff2") format("woff2"); }
+@font-face { font-family: "DM Sans"; font-weight: 500; font-display: swap; src: url("/assets/biz_spa/fonts/dm-sans-latin-500-normal.woff2") format("woff2"); }
+@font-face { font-family: "DM Sans"; font-weight: 600; font-display: swap; src: url("/assets/biz_spa/fonts/dm-sans-latin-600-normal.woff2") format("woff2"); }
+@font-face { font-family: "DM Sans"; font-weight: 700; font-display: swap; src: url("/assets/biz_spa/fonts/dm-sans-latin-700-normal.woff2") format("woff2"); }
+
+body.biz-spa {
+	--spa-navy: #05133c;
+	--spa-navy-base: #091526;
+	--spa-mint: #14f1b1;
+	--spa-blue: #114eff;
+	--spa-gray-100: #f4f4f5;
+	--spa-gray-400: #71717b;
+	--spa-gradient: linear-gradient(90deg, #14f1b1 0%, #114eff 50%, #091526 100%);
+	--spa-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.1);
+	--spa-border-btn: 1px solid rgba(5, 19, 60, 0.5);
+
+	--font-stack: "DM Sans", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+	--primary: var(--spa-blue);
+	--primary-color: var(--spa-blue);
+	font-family: var(--font-stack);
+	font-size: 14px;
+	font-weight: 500;
+}
+:root[data-theme="light"] body.biz-spa {
+	--text-color: var(--spa-navy);
+	--heading-color: var(--spa-navy);
+	--text-muted: var(--spa-gray-400);
+	--text-light: var(--spa-gray-400);
+	--border-color: var(--spa-gray-100);
+	--bg-color: #ffffff;
+	--fg-color: #ffffff;
+	--card-bg: #ffffff;
+	--control-bg: var(--spa-gray-100);
+	background: #ffffff;
+	color: var(--spa-navy);
+}
+body.biz-spa input, body.biz-spa select, body.biz-spa textarea, body.biz-spa button,
+body.biz-spa .btn, body.biz-spa .control-label, body.biz-spa .ql-editor { font-family: var(--font-stack); }
+
+/* Typography */
+body.biz-spa .page-title .title-text { font-size: 24px; font-weight: 700; letter-spacing: -0.01em; }
+@media (min-width: 992px) { body.biz-spa .page-title .title-text { font-size: 32px; line-height: 40px; } }
+body.biz-spa .section-head, body.biz-spa .widget-title { font-size: 18px; font-weight: 600; color: var(--heading-color); }
+body.biz-spa .control-label, body.biz-spa .like-disabled-input, body.biz-spa .form-control { font-size: 14px; }
+body.biz-spa a:not(.btn):not(.dropdown-item):not(.item-anchor):not(.grey-link):hover { color: var(--spa-blue); }
+
+/* Page header: frosted bar with the brand gradient as a single accent line */
+body.biz-spa .navbar {
+	backdrop-filter: blur(6px);
+	-webkit-backdrop-filter: blur(6px);
+}
+:root[data-theme="light"] body.biz-spa .navbar { background: rgba(255, 255, 255, 0.8); border-bottom: 1px solid var(--spa-gray-100); }
+body.biz-spa .page-head { border-bottom: 2px solid transparent; border-image: var(--spa-gradient) 1; }
+
+/* Buttons */
+body.biz-spa .btn { border-radius: 10px; font-weight: 700; font-size: 14px; box-shadow: none; }
+body.biz-spa .btn:focus-visible { outline: 2px solid var(--spa-blue); outline-offset: 2px; }
+body.biz-spa .btn-primary, body.biz-spa .btn-primary:not(:disabled):not(.disabled):active {
+	background: var(--spa-mint); border: 1px solid var(--spa-mint); color: var(--spa-navy);
+}
+body.biz-spa .btn-primary:hover, body.biz-spa .btn-primary:focus { background: #10d99f; border-color: #10d99f; color: var(--spa-navy); }
+:root[data-theme="light"] body.biz-spa .btn-default, :root[data-theme="light"] body.biz-spa .btn-secondary {
+	background: #ffffff; border: var(--spa-border-btn); color: var(--spa-navy);
+}
+:root[data-theme="light"] body.biz-spa .btn-default:hover, :root[data-theme="light"] body.biz-spa .btn-secondary:hover { background: var(--spa-gray-100); color: var(--spa-navy); }
+body.biz-spa .page-actions .btn { height: 40px; padding: 8px 20px; }
+body.biz-spa .page-actions .btn-primary { min-width: 140px; }
+body.biz-spa .page-actions .icon-btn { padding: 8px; min-width: 40px; }
+/* Navy secondary action, for custom buttons such as Check In */
+body.biz-spa .btn.spa-btn-navy { background: var(--spa-navy); border: 1px solid var(--spa-navy); color: #ffffff; }
+body.biz-spa .btn.spa-btn-navy:hover { background: var(--spa-navy-base); color: #ffffff; }
+
+/* Cards and panels */
+body.biz-spa .frappe-card, body.biz-spa .form-page, body.biz-spa .widget, body.biz-spa .form-dashboard-section .frappe-card {
+	border: 1px solid var(--spa-gray-100); border-radius: 12px; box-shadow: var(--spa-shadow);
+}
+body.biz-spa .widget { padding: 24px; }
+body.biz-spa .widget.shortcut-widget-box { padding: 16px 24px; }
+body.biz-spa .widget.shortcut-widget-box .widget-title { font-size: 16px; }
+body.biz-spa .modal-content { border-radius: 16px; border: 1px solid var(--spa-gray-100); }
+body.biz-spa .dropdown-menu { border-radius: 12px; border-color: var(--spa-gray-100); box-shadow: var(--spa-shadow); }
+
+/* Inputs */
+body.biz-spa .form-control, body.biz-spa .like-disabled-input, body.biz-spa .awesomplete input { border-radius: 8px; }
+body.biz-spa .form-control:focus { box-shadow: 0 0 0 2px rgba(17, 78, 255, 0.25); }
+
+/* Sidebar: active row is a navy pill, as in the design system's navigation */
+body.biz-spa .standard-sidebar-item.selected, body.biz-spa .desk-sidebar .selected { background: var(--spa-navy); border-radius: 10px; }
+body.biz-spa .standard-sidebar-item.selected .sidebar-item-label,
+body.biz-spa .standard-sidebar-item.selected .sidebar-item-icon,
+body.biz-spa .standard-sidebar-item.selected a { color: #ffffff; --icon-stroke: #ffffff; }
+body.biz-spa .standard-sidebar-item { border-radius: 10px; }
+
+/* Lists and grids */
+:root[data-theme="light"] body.biz-spa .list-row-head, :root[data-theme="light"] body.biz-spa .grid-heading-row { background: var(--spa-gray-100); }
+body.biz-spa .list-row-head { border-radius: 8px; }
+body.biz-spa .form-grid { border-radius: 8px; }
+body.biz-spa .indicator-pill { border-radius: 999px; font-weight: 500; font-size: 12px; line-height: 20px; padding: 2px 12px; }
+
+/* Workspace link cards: mint rule on top, per the design system's expandable list */
+body.biz-spa .links-widget-box { border-top: 2px solid var(--spa-mint); }
+body.biz-spa .links-widget-box .link-item { font-size: 14px; }
+
+/* Page canvas: light gray behind white cards, as in the design system pages */
+:root[data-theme="light"] body.biz-spa, :root[data-theme="light"] body.biz-spa .main-section,
+:root[data-theme="light"] body.biz-spa #body, :root[data-theme="light"] body.biz-spa .content.page-container { background: var(--spa-gray-100); }
+:root[data-theme="light"] body.biz-spa .page-head, :root[data-theme="light"] body.biz-spa .navbar { background: rgba(255, 255, 255, 0.8); }
+:root[data-theme="light"] body.biz-spa .page-head { background: #ffffff; }
+
+/* Bizaxl wordmark replaces the ERPNext logo; initials in brand colors */
+body.biz-spa .navbar-home .app-logo { display: none; }
+body.biz-spa .navbar-home::after { content: "Bizaxl"; font-size: 18px; font-weight: 700; letter-spacing: -0.01em; color: var(--spa-navy); }
+body.biz-spa .navbar .avatar-frame, body.biz-spa .navbar .standard-image { background: var(--spa-navy) !important; color: var(--spa-mint) !important; font-weight: 700; }
+
+/* Workspace: no card inside a card, and no repeated decoration */
+body.biz-spa .layout-main-section, body.biz-spa .layout-main-section-wrapper { background: transparent; border: 0; box-shadow: none; }
+body.biz-spa .layout-main-section { padding: 0; }
+body.biz-spa .standard-sidebar-label { display: none; }
+body.biz-spa .links-widget-box .link-item svg, body.biz-spa .shortcut-widget-box .widget-control svg { display: none; }
+body.biz-spa .links-widget-box { border-top: 2px solid var(--spa-mint); }
+body.biz-spa .links-widget-box .widget-title { display: flex; align-items: center; gap: 16px; font-size: 18px; font-weight: 600; }
+body.biz-spa .spa-card-icon { width: 20px; height: 20px; flex-shrink: 0; color: var(--spa-navy); stroke: currentColor; --icon-stroke: currentColor; }
+body.biz-spa .links-widget-box .link-item { padding: 6px 0; font-weight: 500; }
+body.biz-spa .links-widget-box .link-item:hover .link-text { color: var(--spa-blue); }
+body.biz-spa .shortcut-widget-box:hover { border-color: var(--spa-mint); }
+body.biz-spa .ce-header { padding: 0; }
+body.biz-spa .ce-header .h5, body.biz-spa .ce-header .h5 b {
+	display: inline-block; background: #ffffff; color: var(--spa-navy); font-size: 12px; font-weight: 500; line-height: 20px; padding: 2px 12px; border-radius: 999px; margin: 0;
+}
+body.biz-spa .ce-header .h5 { box-shadow: var(--spa-shadow); padding: 0 ; }
+
+/* Forms and reports */
+body.biz-spa .section-head { font-size: 16px; }
+body.biz-spa .form-tabs-list { border-bottom: 1px solid var(--spa-gray-100); }
+body.biz-spa .form-tabs .nav-link.active { color: var(--spa-navy); border-bottom: 2px solid var(--spa-mint); font-weight: 700; }
+body.biz-spa .query-report .dt-header, body.biz-spa .datatable .dt-header { background: var(--spa-gray-100); }
+body.biz-spa-workspace .page-actions { display: none; }
+body.biz-spa .links-widget-box .widget-head { padding-left: 0; margin-left: 0; }
+body.biz-spa .links-widget-box .widget-title { padding-left: 0; }
+
+/* Workspace pages are built by the admin, so the private-workspace button is removed */
+body.biz-spa-workspace .workspace-footer, body.biz-spa-workspace .btn-new-workspace, body.biz-spa-workspace .btn-edit-workspace { display: none !important; }
+/* A table under a same-named section heading does not need its label twice */
+body.biz-spa .frappe-control[data-fieldtype="Table"] > .form-group > .clearfix,
+body.biz-spa .frappe-control[data-fieldtype="Table"] > div > label.control-label,
+body.biz-spa .frappe-control[data-fieldtype="Table"] .grid-field > .control-label { display: none; }

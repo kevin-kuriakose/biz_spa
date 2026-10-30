@@ -1,0 +1,7 @@
+frappe.query_reports["No-Show and Cancellation Analysis"] = {
+	filters: [
+		{"fieldname": "branch", "label": "Branch", "fieldtype": "Link", "options": "Spa Branch"},
+		{"fieldname": "from_date", "label": "From Date", "fieldtype": "Date", default: frappe.datetime.add_months(frappe.datetime.get_today(), -1)},
+		{"fieldname": "to_date", "label": "To Date", "fieldtype": "Date", default: frappe.datetime.get_today()},
+	],
+};

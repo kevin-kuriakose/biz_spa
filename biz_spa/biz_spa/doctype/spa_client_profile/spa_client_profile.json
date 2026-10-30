@@ -1,0 +1,314 @@
+{
+ "actions": [],
+ "autoname": "naming_series:",
+ "creation": "2026-10-30 00:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "client_name",
+  "mobile",
+  "email",
+  "status",
+  "cb_1",
+  "customer",
+  "date_of_birth",
+  "anniversary_date",
+  "gender",
+  "sb_care_profile",
+  "skin_type",
+  "hair_type",
+  "allergies",
+  "cb_2",
+  "preferences",
+  "preferred_staff",
+  "preferred_branch",
+  "sb_marketing",
+  "referral_source",
+  "marketing_consent",
+  "photo_consent",
+  "cb_3",
+  "loyalty_program",
+  "sb_history",
+  "loyalty_points",
+  "total_spend",
+  "cb_4",
+  "visit_count",
+  "last_visit_date",
+  "membership_status"
+ ],
+ "fields": [
+  {
+   "default": "SPA-CL-.#####",
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Series",
+   "no_copy": 1,
+   "options": "SPA-CL-.#####",
+   "print_hide": 1,
+   "reqd": 1
+  },
+  {
+   "bold": 1,
+   "fieldname": "client_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Client Name",
+   "reqd": 1
+  },
+  {
+   "fieldname": "mobile",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Mobile",
+   "permlevel": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "email",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Email",
+   "permlevel": 1
+  },
+  {
+   "default": "Active",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Status",
+   "options": "Active\nInactive\nBlocked"
+  },
+  {
+   "fieldname": "cb_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "customer",
+   "fieldtype": "Link",
+   "label": "Customer",
+   "options": "Customer",
+   "permlevel": 1
+  },
+  {
+   "fieldname": "date_of_birth",
+   "fieldtype": "Date",
+   "label": "Date Of Birth"
+  },
+  {
+   "fieldname": "anniversary_date",
+   "fieldtype": "Date",
+   "label": "Anniversary Date"
+  },
+  {
+   "fieldname": "gender",
+   "fieldtype": "Select",
+   "label": "Gender",
+   "options": "\nFemale\nMale\nOther"
+  },
+  {
+   "fieldname": "sb_care_profile",
+   "fieldtype": "Section Break",
+   "label": "Care Profile"
+  },
+  {
+   "fieldname": "skin_type",
+   "fieldtype": "Data",
+   "label": "Skin Type"
+  },
+  {
+   "fieldname": "hair_type",
+   "fieldtype": "Data",
+   "label": "Hair Type"
+  },
+  {
+   "fieldname": "allergies",
+   "fieldtype": "Small Text",
+   "label": "Allergies"
+  },
+  {
+   "fieldname": "cb_2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "preferences",
+   "fieldtype": "Small Text",
+   "label": "Preferences"
+  },
+  {
+   "fieldname": "preferred_staff",
+   "fieldtype": "Link",
+   "label": "Preferred Staff",
+   "options": "Spa Staff Profile"
+  },
+  {
+   "fieldname": "preferred_branch",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Preferred Branch",
+   "options": "Spa Branch"
+  },
+  {
+   "fieldname": "sb_marketing",
+   "fieldtype": "Section Break",
+   "label": "Marketing"
+  },
+  {
+   "fieldname": "referral_source",
+   "fieldtype": "Data",
+   "label": "Referral Source"
+  },
+  {
+   "fieldname": "marketing_consent",
+   "fieldtype": "Check",
+   "label": "Marketing Consent"
+  },
+  {
+   "fieldname": "photo_consent",
+   "fieldtype": "Check",
+   "label": "Photo Consent"
+  },
+  {
+   "fieldname": "cb_3",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "loyalty_program",
+   "fieldtype": "Link",
+   "label": "Loyalty Program",
+   "options": "Loyalty Program"
+  },
+  {
+   "fieldname": "sb_history",
+   "fieldtype": "Section Break",
+   "label": "History"
+  },
+  {
+   "fieldname": "loyalty_points",
+   "fieldtype": "Int",
+   "label": "Loyalty Points",
+   "no_copy": 1,
+   "permlevel": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "total_spend",
+   "fieldtype": "Currency",
+   "label": "Total Spend",
+   "no_copy": 1,
+   "permlevel": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "cb_4",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "visit_count",
+   "fieldtype": "Int",
+   "label": "Visit Count",
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "last_visit_date",
+   "fieldtype": "Date",
+   "label": "Last Visit Date",
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "membership_status",
+   "fieldtype": "Data",
+   "label": "Membership Status",
+   "no_copy": 1,
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-10-30 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Biz Spa",
+ "name": "Spa Client Profile",
+ "naming_rule": "By \"Naming Series\" field",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Spa Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Spa Receptionist",
+   "write": 1
+  },
+  {
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Spa Therapist"
+  },
+  {
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Spa Accountant"
+  },
+  {
+   "permlevel": 1,
+   "read": 1,
+   "role": "System Manager",
+   "write": 1
+  },
+  {
+   "permlevel": 1,
+   "read": 1,
+   "role": "Spa Manager",
+   "write": 1
+  },
+  {
+   "permlevel": 1,
+   "read": 1,
+   "role": "Spa Receptionist",
+   "write": 1
+  },
+  {
+   "permlevel": 1,
+   "read": 1,
+   "role": "Spa Accountant"
+  }
+ ],
+ "search_fields": "client_name,mobile,email",
+ "show_title_field_in_link": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "client_name",
+ "track_changes": 1
+}

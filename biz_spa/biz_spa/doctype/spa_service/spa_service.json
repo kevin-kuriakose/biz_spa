@@ -1,0 +1,189 @@
+{
+ "actions": [],
+ "autoname": "field:service_name",
+ "creation": "2026-10-30 00:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "service_name",
+  "category",
+  "is_active",
+  "online_bookable",
+  "cb_1",
+  "price",
+  "duration_minutes",
+  "buffer_minutes",
+  "item",
+  "sb_rules",
+  "room_type_required",
+  "gender_target",
+  "cb_2",
+  "commission_rate",
+  "requires_consultation",
+  "requires_patch_test",
+  "sb_consumables",
+  "consumables"
+ ],
+ "fields": [
+  {
+   "bold": 1,
+   "fieldname": "service_name",
+   "fieldtype": "Data",
+   "label": "Service Name",
+   "reqd": 1
+  },
+  {
+   "fieldname": "category",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Category",
+   "options": "Spa Service Category",
+   "reqd": 1
+  },
+  {
+   "default": "1",
+   "fieldname": "is_active",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Is Active"
+  },
+  {
+   "fieldname": "online_bookable",
+   "fieldtype": "Check",
+   "label": "Online Bookable"
+  },
+  {
+   "fieldname": "cb_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "price",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Price",
+   "reqd": 1
+  },
+  {
+   "fieldname": "duration_minutes",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Duration Minutes",
+   "reqd": 1
+  },
+  {
+   "fieldname": "buffer_minutes",
+   "fieldtype": "Int",
+   "label": "Buffer Minutes"
+  },
+  {
+   "fieldname": "item",
+   "fieldtype": "Link",
+   "label": "Item",
+   "options": "Item"
+  },
+  {
+   "fieldname": "sb_rules",
+   "fieldtype": "Section Break",
+   "label": "Rules"
+  },
+  {
+   "fieldname": "room_type_required",
+   "fieldtype": "Select",
+   "label": "Room Type Required",
+   "options": "\nTreatment Room\nCouple Suite\nHair Station\nNail Station\nPedicure Chair\nSteam and Sauna"
+  },
+  {
+   "default": "Any",
+   "fieldname": "gender_target",
+   "fieldtype": "Select",
+   "label": "Gender Target",
+   "options": "Any\nWomen\nMen"
+  },
+  {
+   "fieldname": "cb_2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "commission_rate",
+   "fieldtype": "Float",
+   "label": "Commission Rate (override)"
+  },
+  {
+   "fieldname": "requires_consultation",
+   "fieldtype": "Check",
+   "label": "Requires Consultation"
+  },
+  {
+   "fieldname": "requires_patch_test",
+   "fieldtype": "Check",
+   "label": "Requires Patch Test"
+  },
+  {
+   "fieldname": "sb_consumables",
+   "fieldtype": "Section Break",
+   "label": "Consumables"
+  },
+  {
+   "fieldname": "consumables",
+   "fieldtype": "Table",
+   "label": "Consumables",
+   "options": "Spa Service Consumable"
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-10-30 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Biz Spa",
+ "name": "Spa Service",
+ "naming_rule": "By fieldname",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Spa Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Spa Receptionist"
+  },
+  {
+   "role": "Spa Therapist",
+   "select": 1
+  },
+  {
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Spa Accountant"
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

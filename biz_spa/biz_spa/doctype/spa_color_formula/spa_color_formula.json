@@ -1,0 +1,175 @@
+{
+ "actions": [],
+ "autoname": "naming_series:",
+ "creation": "2026-10-30 00:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "client",
+  "visit",
+  "staff",
+  "formula_date",
+  "cb_1",
+  "brand",
+  "shade_code",
+  "developer_volume",
+  "mix_ratio",
+  "processing_minutes",
+  "sb_result",
+  "result_notes",
+  "cb_2",
+  "photo_before",
+  "photo_after"
+ ],
+ "fields": [
+  {
+   "default": "SPA-CF-.#####",
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Series",
+   "no_copy": 1,
+   "options": "SPA-CF-.#####",
+   "print_hide": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "client",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Client",
+   "options": "Spa Client Profile",
+   "reqd": 1
+  },
+  {
+   "fieldname": "visit",
+   "fieldtype": "Link",
+   "label": "Visit",
+   "options": "Spa Visit"
+  },
+  {
+   "fieldname": "staff",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Staff",
+   "options": "Spa Staff Profile"
+  },
+  {
+   "fieldname": "formula_date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Formula Date",
+   "reqd": 1
+  },
+  {
+   "fieldname": "cb_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "brand",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Brand"
+  },
+  {
+   "fieldname": "shade_code",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Shade Code"
+  },
+  {
+   "fieldname": "developer_volume",
+   "fieldtype": "Data",
+   "label": "Developer Volume"
+  },
+  {
+   "fieldname": "mix_ratio",
+   "fieldtype": "Data",
+   "label": "Mix Ratio"
+  },
+  {
+   "fieldname": "processing_minutes",
+   "fieldtype": "Int",
+   "label": "Processing Minutes"
+  },
+  {
+   "fieldname": "sb_result",
+   "fieldtype": "Section Break",
+   "label": "Result"
+  },
+  {
+   "fieldname": "result_notes",
+   "fieldtype": "Small Text",
+   "label": "Result Notes"
+  },
+  {
+   "fieldname": "cb_2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "photo_before",
+   "fieldtype": "Int",
+   "label": "Photo Before"
+  },
+  {
+   "fieldname": "photo_after",
+   "fieldtype": "Attach Image",
+   "label": "Photo After"
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-10-30 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Biz Spa",
+ "name": "Spa Color Formula",
+ "naming_rule": "By \"Naming Series\" field",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Spa Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Spa Receptionist"
+  },
+  {
+   "create": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Spa Therapist",
+   "write": 1
+  }
+ ],
+ "sort_field": "formula_date",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

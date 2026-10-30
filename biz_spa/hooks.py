@@ -8,7 +8,7 @@ app_license = "mit"
 # Apps
 # ------------------
 
-# required_apps = []
+required_apps = ["frappe", "erpnext"]
 
 # Each item in the list will be shown as an app in the apps page
 # add_to_apps_screen = [
@@ -247,3 +247,84 @@ app_license = "mit"
 # List of apps whose translatable strings should be excluded from this app's translations.
 # ignore_translatable_strings_from = []
 
+override_doctype_class = {
+	"Spa Cash Close Line": "biz_spa.biz_spa.doctype.spa_cash_close_line.spa_cash_close_line.SpaCashCloseLine",
+	"Spa Cash Close": "biz_spa.biz_spa.doctype.spa_cash_close.spa_cash_close.SpaCashClose",
+	"Spa Commission Payout Line": "biz_spa.biz_spa.doctype.spa_commission_payout_line.spa_commission_payout_line.SpaCommissionPayoutLine",
+	"Spa Commission Payout": "biz_spa.biz_spa.doctype.spa_commission_payout.spa_commission_payout.SpaCommissionPayout",
+	"Spa Commission Entry": "biz_spa.biz_spa.doctype.spa_commission_entry.spa_commission_entry.SpaCommissionEntry",
+	"Spa Gift Card Transaction": "biz_spa.biz_spa.doctype.spa_gift_card_transaction.spa_gift_card_transaction.SpaGiftCardTransaction",
+	"Spa Gift Card": "biz_spa.biz_spa.doctype.spa_gift_card.spa_gift_card.SpaGiftCard",
+	"Spa Membership Entitlement": "biz_spa.biz_spa.doctype.spa_membership_entitlement.spa_membership_entitlement.SpaMembershipEntitlement",
+	"Spa Membership": "biz_spa.biz_spa.doctype.spa_membership.spa_membership.SpaMembership",
+	"Spa Client Package Usage": "biz_spa.biz_spa.doctype.spa_client_package_usage.spa_client_package_usage.SpaClientPackageUsage",
+	"Spa Client Package Item": "biz_spa.biz_spa.doctype.spa_client_package_item.spa_client_package_item.SpaClientPackageItem",
+	"Spa Client Package": "biz_spa.biz_spa.doctype.spa_client_package.spa_client_package.SpaClientPackage",
+	"Spa Visit Payment": "biz_spa.biz_spa.doctype.spa_visit_payment.spa_visit_payment.SpaVisitPayment",
+	"Spa Visit Consumable": "biz_spa.biz_spa.doctype.spa_visit_consumable.spa_visit_consumable.SpaVisitConsumable",
+	"Spa Visit Product": "biz_spa.biz_spa.doctype.spa_visit_product.spa_visit_product.SpaVisitProduct",
+	"Spa Visit Service": "biz_spa.biz_spa.doctype.spa_visit_service.spa_visit_service.SpaVisitService",
+	"Spa Visit": "biz_spa.biz_spa.doctype.spa_visit.spa_visit.SpaVisit",
+	"Spa Waitlist Entry": "biz_spa.biz_spa.doctype.spa_waitlist_entry.spa_waitlist_entry.SpaWaitlistEntry",
+	"Spa Staff Time Off": "biz_spa.biz_spa.doctype.spa_staff_time_off.spa_staff_time_off.SpaStaffTimeOff",
+	"Spa Appointment Service": "biz_spa.biz_spa.doctype.spa_appointment_service.spa_appointment_service.SpaAppointmentService",
+	"Spa Appointment": "biz_spa.biz_spa.doctype.spa_appointment.spa_appointment.SpaAppointment",
+	"Spa Consultation": "biz_spa.biz_spa.doctype.spa_consultation.spa_consultation.SpaConsultation",
+	"Spa Client Profile": "biz_spa.biz_spa.doctype.spa_client_profile.spa_client_profile.SpaClientProfile",
+	"Spa Consent Template": "biz_spa.biz_spa.doctype.spa_consent_template.spa_consent_template.SpaConsentTemplate",
+	"Spa Promotion Service": "biz_spa.biz_spa.doctype.spa_promotion_service.spa_promotion_service.SpaPromotionService",
+	"Spa Promotion": "biz_spa.biz_spa.doctype.spa_promotion.spa_promotion.SpaPromotion",
+	"Spa Membership Plan Benefit": "biz_spa.biz_spa.doctype.spa_membership_plan_benefit.spa_membership_plan_benefit.SpaMembershipPlanBenefit",
+	"Spa Membership Plan": "biz_spa.biz_spa.doctype.spa_membership_plan.spa_membership_plan.SpaMembershipPlan",
+	"Spa Package Item": "biz_spa.biz_spa.doctype.spa_package_item.spa_package_item.SpaPackageItem",
+	"Spa Package": "biz_spa.biz_spa.doctype.spa_package.spa_package.SpaPackage",
+	"Spa Staff Shift": "biz_spa.biz_spa.doctype.spa_staff_shift.spa_staff_shift.SpaStaffShift",
+	"Spa Staff Skill": "biz_spa.biz_spa.doctype.spa_staff_skill.spa_staff_skill.SpaStaffSkill",
+	"Spa Staff Profile": "biz_spa.biz_spa.doctype.spa_staff_profile.spa_staff_profile.SpaStaffProfile",
+	"Spa Service Consumable": "biz_spa.biz_spa.doctype.spa_service_consumable.spa_service_consumable.SpaServiceConsumable",
+	"Spa Service": "biz_spa.biz_spa.doctype.spa_service.spa_service.SpaService",
+	"Spa Service Category": "biz_spa.biz_spa.doctype.spa_service_category.spa_service_category.SpaServiceCategory",
+	"Spa Room": "biz_spa.biz_spa.doctype.spa_room.spa_room.SpaRoom",
+	"Spa Branch Hours": "biz_spa.biz_spa.doctype.spa_branch_hours.spa_branch_hours.SpaBranchHours",
+	"Spa Branch": "biz_spa.biz_spa.doctype.spa_branch.spa_branch.SpaBranch",
+	"Spa Settings": "biz_spa.biz_spa.doctype.spa_settings.spa_settings.SpaSettings",
+}
+
+app_include_css = "/assets/biz_spa/css/biz_spa.css"
+app_include_js = "/assets/biz_spa/js/biz_spa.js"
+app_include_icons = ["biz_spa/icons/biz_spa_lucide.svg"]
+
+scheduler_events = {
+	"hourly": ["biz_spa.tasks.hourly_appointments"],
+	"daily": [
+		"biz_spa.tasks.daily_housekeeping",
+		"biz_spa.tasks.daily_greetings",
+	],
+}
+
+doc_events = {
+	"User": {"before_validate": "biz_spa.permissions.apply_staff_access"},
+}
+
+permission_query_conditions = {
+	"Spa Appointment": "biz_spa.permissions.appointment_query",
+	"Spa Waitlist Entry": "biz_spa.permissions.waitlist_query",
+	"Spa Client Profile": "biz_spa.permissions.client_query",
+	"Spa Consultation": "biz_spa.permissions.consultation_query",
+	"Spa Commission Entry": "biz_spa.permissions.commission_query",
+	"Spa Feedback": "biz_spa.permissions.feedback_query",
+	"Spa Color Formula": "biz_spa.permissions.color_formula_query",
+	"Spa Incident Report": "biz_spa.permissions.incident_query",
+	"User": "biz_spa.permissions.user_query",
+}
+
+has_permission = {
+	"Spa Appointment": "biz_spa.permissions.appointment_access",
+	"Spa Waitlist Entry": "biz_spa.permissions.waitlist_access",
+	"Spa Client Profile": "biz_spa.permissions.client_access",
+	"Spa Consultation": "biz_spa.permissions.consultation_access",
+	"Spa Commission Entry": "biz_spa.permissions.commission_access",
+	"Spa Feedback": "biz_spa.permissions.feedback_access",
+	"Spa Color Formula": "biz_spa.permissions.color_formula_access",
+	"Spa Incident Report": "biz_spa.permissions.incident_access",
+}

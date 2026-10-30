@@ -1,0 +1,183 @@
+{
+ "actions": [],
+ "creation": "2026-10-30 00:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "sb_defaults",
+  "default_company",
+  "default_branch",
+  "default_customer_group",
+  "walkin_customer",
+  "default_loyalty_program",
+  "cb_1",
+  "sb_booking",
+  "slot_interval_minutes",
+  "booking_window_days",
+  "cb_2",
+  "cancellation_window_hours",
+  "no_show_fee_percent",
+  "reminder_hours_before",
+  "sb_accounting",
+  "tax_template",
+  "gift_card_item",
+  "cb_3",
+  "gift_card_liability_account",
+  "commission_expense_account",
+  "commission_payable_account"
+ ],
+ "fields": [
+  {
+   "fieldname": "sb_defaults",
+   "fieldtype": "Section Break",
+   "label": "Defaults"
+  },
+  {
+   "fieldname": "default_company",
+   "fieldtype": "Link",
+   "label": "Default Company",
+   "options": "Company"
+  },
+  {
+   "fieldname": "default_branch",
+   "fieldtype": "Link",
+   "label": "Default Branch",
+   "options": "Spa Branch"
+  },
+  {
+   "fieldname": "default_customer_group",
+   "fieldtype": "Link",
+   "label": "Default Customer Group",
+   "options": "Customer Group"
+  },
+  {
+   "fieldname": "walkin_customer",
+   "fieldtype": "Link",
+   "label": "Walkin Customer",
+   "options": "Customer"
+  },
+  {
+   "fieldname": "default_loyalty_program",
+   "fieldtype": "Link",
+   "label": "Default Loyalty Program",
+   "options": "Loyalty Program"
+  },
+  {
+   "fieldname": "cb_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "sb_booking",
+   "fieldtype": "Section Break",
+   "label": "Booking"
+  },
+  {
+   "default": "15",
+   "fieldname": "slot_interval_minutes",
+   "fieldtype": "Int",
+   "label": "Slot Interval Minutes"
+  },
+  {
+   "default": "60",
+   "fieldname": "booking_window_days",
+   "fieldtype": "Int",
+   "label": "Booking Window Days"
+  },
+  {
+   "fieldname": "cb_2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "24",
+   "fieldname": "cancellation_window_hours",
+   "fieldtype": "Int",
+   "label": "Cancellation Window Hours"
+  },
+  {
+   "fieldname": "no_show_fee_percent",
+   "fieldtype": "Percent",
+   "label": "No Show Fee Percent"
+  },
+  {
+   "default": "24",
+   "fieldname": "reminder_hours_before",
+   "fieldtype": "Int",
+   "label": "Reminder Hours Before"
+  },
+  {
+   "fieldname": "sb_accounting",
+   "fieldtype": "Section Break",
+   "label": "Accounting"
+  },
+  {
+   "fieldname": "tax_template",
+   "fieldtype": "Link",
+   "label": "Tax Template",
+   "options": "Sales Taxes and Charges Template"
+  },
+  {
+   "fieldname": "gift_card_item",
+   "fieldtype": "Link",
+   "label": "Gift Card Item",
+   "options": "Item"
+  },
+  {
+   "fieldname": "cb_3",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "gift_card_liability_account",
+   "fieldtype": "Link",
+   "label": "Gift Card Liability Account",
+   "options": "Account"
+  },
+  {
+   "fieldname": "commission_expense_account",
+   "fieldtype": "Link",
+   "label": "Commission Expense Account",
+   "options": "Account"
+  },
+  {
+   "fieldname": "commission_payable_account",
+   "fieldtype": "Link",
+   "label": "Commission Payable Account",
+   "options": "Account"
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "issingle": 1,
+ "links": [],
+ "modified": "2026-10-30 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Biz Spa",
+ "name": "Spa Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "read": 1,
+   "role": "Spa Manager",
+   "write": 1
+  },
+  {
+   "read": 1,
+   "role": "Spa Accountant"
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

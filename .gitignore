@@ -4,4 +4,7 @@
 *.swp
 tags
 node_modules
-__pycache__
+__pycache__/
+*.pyo
+*.egg-info/
+node_modules/
