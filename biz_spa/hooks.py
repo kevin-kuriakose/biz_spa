@@ -302,6 +302,8 @@ scheduler_events = {
 	],
 }
 
+after_install = "biz_spa.setup.ensure_customer_role"
+after_migrate = "biz_spa.setup.ensure_customer_role"
 doc_events = {
 	"User": {"before_validate": "biz_spa.permissions.apply_staff_access"},
 }

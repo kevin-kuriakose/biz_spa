@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Book at Biz Spa</title>
+	<link rel="stylesheet" href="/assets/biz_spa/portal/portal.css">
+	<link rel="stylesheet" href="/assets/biz_spa/customer/customer.css">
+</head>
+<body>
+	<div id="sprite"></div>
+	<div id="app"></div>
+	<div id="toasts" role="status" aria-live="polite"></div>
+	<script>window.SPA = { csrf: {{ csrf_token | tojson }} };</script>
+	<script src="/assets/biz_spa/customer/customer.js"></script>
+</body>
+</html>

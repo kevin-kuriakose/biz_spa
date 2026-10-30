@@ -26,6 +26,7 @@
   "preferred_branch",
   "sb_marketing",
   "referral_source",
+  "online_account",
   "marketing_consent",
   "photo_consent",
   "cb_3",
@@ -159,6 +160,12 @@
    "fieldname": "referral_source",
    "fieldtype": "Data",
    "label": "Referral Source"
+  },
+  {
+   "fieldname": "online_account",
+   "fieldtype": "Data",
+   "label": "Online Account",
+   "description": "Email of this client's booking account. Check their identity before linking."
   },
   {
    "fieldname": "marketing_consent",

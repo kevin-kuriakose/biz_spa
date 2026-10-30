@@ -7,6 +7,12 @@ class SpaClientProfile(Document):
 		duplicate = frappe.db.get_value("Spa Client Profile", {"mobile": self.mobile, "name": ("!=", self.name)})
 		if duplicate:
 			frappe.throw(f"Mobile {self.mobile} is already registered to {duplicate}.")
+		if self.online_account:
+			if not frappe.db.exists("User", self.online_account):
+				frappe.throw(f"There is no online account for {self.online_account}.")
+			linked = frappe.db.get_value("Spa Client Profile", {"online_account": self.online_account, "name": ("!=", self.name)})
+			if linked:
+				frappe.throw(f"{self.online_account} is already linked to {linked}.")
 
 	def after_insert(self):
 		if self.customer:

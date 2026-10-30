@@ -1,9 +1,22 @@
 import json
 
 import frappe
+from contextlib import contextmanager
+
 from frappe.utils import add_days, cint, flt, get_datetime, getdate, now_datetime, nowdate
+from frappe.utils.synchronization import filelock
 
 from biz_spa.booking_rules import ACTIVE, branch_hours, check_line, clock, minutes
+
+
+@contextmanager
+def booking_lock():
+	"""One booking at a time, so two people cannot both take the last free slot."""
+	with filelock("spa_booking", timeout=15):
+		# A fresh read, so a booking saved while this one waited is seen.
+		frappe.db.commit()
+		yield
+		frappe.db.commit()
 
 
 def as_list(value):
@@ -65,7 +78,10 @@ def assign(branch, date, start, services, staff=None, exclude=None):
 @frappe.whitelist()
 def get_available_slots(branch, date, services, staff=None):
 	frappe.has_permission("Spa Appointment", "read", throw=True)
-	rows = service_rows(services)
+	return open_slots(branch, date, service_rows(services), staff)
+
+
+def open_slots(branch, date, rows, staff=None, exclude=None):
 	settings = frappe.get_cached_doc("Spa Settings")
 	today = getdate(nowdate())
 	if not rows or getdate(date) < today or (getdate(date) - today).days > cint(settings.booking_window_days or 60):
@@ -82,7 +98,7 @@ def get_available_slots(branch, date, services, staff=None):
 	for start in range(hours[0], hours[1], step):
 		if start < floor:
 			continue
-		plan = assign(branch, date, start, rows, staff)
+		plan = assign(branch, date, start, rows, staff, exclude)
 		if plan:
 			slots.append({
 				"start_time": clock(start),
@@ -95,18 +111,19 @@ def get_available_slots(branch, date, services, staff=None):
 @frappe.whitelist()
 def book_appointment(client, branch, date, start_time, services, source="Phone"):
 	frappe.has_permission("Spa Appointment", "create", throw=True)
-	plan = assign(branch, date, minutes(start_time), service_rows(services))
-	if not plan:
-		frappe.throw("That slot is no longer available.")
-	doc = frappe.get_doc({
-		"doctype": "Spa Appointment",
-		"client": client,
-		"branch": branch,
-		"appointment_date": date,
-		"start_time": start_time,
-		"source": source,
-		"services": [{"service": p["service"], "staff": p["staff"], "room": p["room"], "start_time": clock(p["start"])} for p in plan],
-	}).insert()
+	with booking_lock():
+		plan = assign(branch, date, minutes(start_time), service_rows(services))
+		if not plan:
+			frappe.throw("That slot is no longer available.")
+		doc = frappe.get_doc({
+			"doctype": "Spa Appointment",
+			"client": client,
+			"branch": branch,
+			"appointment_date": date,
+			"start_time": start_time,
+			"source": source,
+			"services": [{"service": p["service"], "staff": p["staff"], "room": p["room"], "start_time": clock(p["start"])} for p in plan],
+		}).insert()
 	return doc.name
 
 
@@ -130,6 +147,10 @@ def reschedule_appointment(name, date, start_time):
 def cancel_appointment(name, reason):
 	doc = frappe.get_doc("Spa Appointment", name)
 	doc.check_permission("write")
+	return cancel_doc(doc, reason)
+
+
+def cancel_doc(doc, reason):
 	if doc.status not in ACTIVE:
 		frappe.throw(f"A {doc.status} appointment cannot be cancelled.")
 	settings = frappe.get_cached_doc("Spa Settings")
@@ -188,6 +209,10 @@ def check_in(appointment):
 @frappe.whitelist()
 def get_client_balances(client):
 	frappe.has_permission("Spa Client Profile", "read", throw=True)
+	return client_balances(client)
+
+
+def client_balances(client):
 	profile = frappe.db.get_value("Spa Client Profile", client, ["customer", "loyalty_points"], as_dict=True) or {}
 	result = {"loyalty_points": cint(profile.get("loyalty_points")), "packages": [], "memberships": [], "gift_cards": []}
 	if frappe.db.exists("DocType", "Spa Client Package"):

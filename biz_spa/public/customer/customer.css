@@ -1,0 +1,45 @@
+/* Customer booking site, on the portal's Bizaxl tokens and components. */
+body { background: var(--white); }
+.cx-head { position: sticky; top: 0; z-index: 5; background: var(--navy); color: var(--white); border-bottom: 2px solid transparent; border-image: var(--gradient) 1; }
+.cx-bar { max-width: 960px; margin: 0 auto; padding: 12px 16px; display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+.cx-bar .wordmark { color: var(--white); margin-right: auto; }
+.cx-bar nav { display: flex; gap: 4px; flex-wrap: wrap; }
+.cx-bar nav a { color: rgba(255, 255, 255, 0.72); padding: 6px 12px; border-radius: 8px; }
+.cx-bar nav a:hover, .cx-bar nav a.on { color: var(--white); background: rgba(255, 255, 255, 0.12); }
+.cx-main { max-width: 960px; margin: 0 auto; padding: 24px 16px 96px; }
+.cx-hero { background: var(--navy); color: var(--white); padding: 40px 16px; }
+.cx-hero div { max-width: 960px; margin: 0 auto; }
+.cx-hero p { color: rgba(255, 255, 255, 0.72); font-size: 16px; line-height: 26px; margin-top: 8px; }
+.cx-steps { display: flex; gap: 8px; margin-bottom: 24px; }
+.cx-steps span { flex: 1; padding-top: 8px; border-top: 3px solid var(--gray-200); color: var(--gray-400); font-size: 12px; font-weight: 600; }
+.cx-steps span.on { border-color: var(--mint); color: var(--navy); }
+.cx-cat { margin: 24px 0 8px; font-size: 12px; font-weight: 600; color: var(--gray-400); text-transform: uppercase; letter-spacing: 0.04em; }
+.cx-service { display: flex; justify-content: space-between; gap: 16px; align-items: center; width: 100%; padding: 12px 16px; margin-bottom: 8px; border: 1px solid var(--gray-200); border-radius: 10px; background: var(--white); text-align: left; font: inherit; color: inherit; cursor: pointer; }
+.cx-service:hover { border-color: var(--navy); }
+.cx-service.on { border-color: var(--mint); background: #e9fdf7; }
+.cx-tick { width: 24px; height: 24px; border-radius: 50%; border: 1px solid var(--gray-200); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.cx-service.on .cx-tick { background: var(--mint); border-color: var(--mint); }
+.cx-days { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 16px; }
+.cx-day { flex: 0 0 64px; padding: 8px 0; border: 1px solid var(--gray-200); border-radius: 10px; background: var(--white); font: inherit; color: inherit; cursor: pointer; text-align: center; }
+.cx-day strong { display: block; font-size: 18px; }
+.cx-day.on { background: var(--navy); border-color: var(--navy); color: var(--white); }
+.cx-bottom { position: fixed; left: 0; right: 0; bottom: 0; background: var(--white); border-top: 1px solid var(--gray-200); z-index: 5; }
+.cx-bottom div { max-width: 960px; margin: 0 auto; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.cx-row { display: flex; justify-content: space-between; gap: 16px; padding: 8px 0; border-bottom: 1px solid var(--gray-100); }
+.cx-row:last-child { border-bottom: 0; }
+.cx-top { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; flex-wrap: wrap; }
+.cx-tabs { display: flex; gap: 8px; margin-bottom: 16px; }
+.cx-tabs button { flex: 1; height: 40px; border: var(--border-btn); border-radius: 10px; background: var(--white); font: 700 14px "DM Sans", sans-serif; color: var(--navy); cursor: pointer; }
+.cx-tabs button.on { background: var(--navy); color: var(--white); }
+.cx-notice { padding: 12px 16px; border-radius: 10px; background: #fef3c7; color: #92400e; margin-bottom: 16px; }
+.cx-stars { display: flex; gap: 4px; }
+.cx-stars button { border: 0; background: none; padding: 4px; cursor: pointer; color: var(--gray-200); }
+.cx-stars button.on { color: var(--amber); }
+.cx-stars .icon { fill: currentColor; }
+.cx-card-gap { margin-bottom: 16px; }
+
+@media (max-width: 600px) {
+	.cx-bar { gap: 8px 12px; }
+	.cx-bar nav { order: 3; width: 100%; flex-wrap: nowrap; overflow-x: auto; }
+	.cx-bar nav a { white-space: nowrap; }
+}
