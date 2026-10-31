@@ -95,7 +95,8 @@
    "in_list_view": 1,
    "in_standard_filter": 1,
    "label": "Appointment Date",
-   "reqd": 1
+   "reqd": 1,
+   "search_index": 1
   },
   {
    "fieldname": "start_time",
@@ -121,7 +122,8 @@
    "in_list_view": 1,
    "in_standard_filter": 1,
    "label": "Status",
-   "options": "Scheduled\nConfirmed\nChecked In\nIn Progress\nCompleted\nCancelled\nNo Show"
+   "options": "Scheduled\nConfirmed\nChecked In\nIn Progress\nCompleted\nCancelled\nNo Show",
+   "read_only": 1
   },
   {
    "default": "Phone",

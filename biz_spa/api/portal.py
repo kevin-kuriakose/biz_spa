@@ -1,7 +1,7 @@
 import frappe
 from frappe.utils import flt, getdate, nowdate
 
-from biz_spa.booking_rules import minutes
+from biz_spa.booking_rules import to_minutes
 from biz_spa.permissions import own_staff
 
 FINANCE = {"System Manager", "Spa Manager", "Spa Accountant"}
@@ -203,13 +203,15 @@ def dashboard(branch=None):
 	cards = [
 		{
 			"label": "Today's Appointments",
-			"value": len({l["appointment"] for l in lines}),
+			"value": len({line["appointment"] for line in lines}),
 			"icon": "calendar-check",
 		}
 	]
-	active = [l for l in lines if l["status"] in ("Scheduled", "Confirmed", "Checked In", "In Progress")]
+	active = [
+		line for line in lines if line["status"] in ("Scheduled", "Confirmed", "Checked In", "In Progress")
+	]
 	cards.append(
-		{"label": "Still To Come", "value": len({l["appointment"] for l in active}), "icon": "clock"}
+		{"label": "Still To Come", "value": len({line["appointment"] for line in active}), "icon": "clock"}
 	)
 	if staff is not None:
 		unpaid = frappe.db.sql(
@@ -266,8 +268,8 @@ def schedule(date, branch=None):
 		as_dict=True,
 	)
 	for row in rows:
-		row.start = minutes(row.pop("start_time"))
-		row.end = minutes(row.pop("end_time"))
+		row.start = to_minutes(row.pop("start_time"))
+		row.end = to_minutes(row.pop("end_time"))
 	return {"date": str(getdate(date)), "lines": rows}
 
 
@@ -287,17 +289,21 @@ def services_for_booking():
 def titles(pairs):
 	"""Display names for Link values, as {doctype: {name: title}}. Only titled spa records resolve."""
 	result = {}
-	for doctype, names in frappe.parse_json(pairs).items():
-		title_field = frappe.get_meta(doctype).title_field
-		if not doctype.startswith("Spa ") or not title_field or not frappe.has_permission(doctype, "select"):
+	pairs = frappe.parse_json(pairs)
+	if not isinstance(pairs, dict):
+		frappe.throw("Titles need a mapping of doctypes to names.")
+	for doctype, names in pairs.items():
+		if not doctype.startswith("Spa ") or not frappe.db.exists("DocType", doctype):
 			continue
+		title_field = frappe.get_meta(doctype).title_field
+		if not title_field or not (
+			frappe.has_permission(doctype, "read") or frappe.has_permission(doctype, "select")
+		):
+			continue
+		names = [str(name) for name in (names if isinstance(names, list) else [names])]
 		result[doctype] = dict(
-			frappe.get_all(
-				doctype,
-				filters={"name": ("in", names)},
-				fields=["name", title_field],
-				as_list=True,
-				ignore_permissions=True,
+			frappe.get_list(
+				doctype, filters={"name": ("in", names)}, fields=["name", title_field], as_list=True
 			)
 		)
 	return result

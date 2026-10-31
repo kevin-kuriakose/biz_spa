@@ -1,7 +1,7 @@
 import frappe
 from frappe.utils import add_months, add_to_date, cint, get_datetime, getdate, now_datetime, nowdate, today
 
-from biz_spa.booking_rules import clock, minutes
+from biz_spa.booking_rules import clock, to_minutes
 
 
 def each(rows, label, fn):
@@ -15,8 +15,8 @@ def each(rows, label, fn):
 			frappe.log_error(frappe.get_traceback(), f"Biz Spa: {label} failed")
 
 
-def start_of(row):
-	return get_datetime(f"{row.appointment_date} {clock(minutes(row.start_time))}")
+def start_datetime(row):
+	return get_datetime(f"{row.appointment_date} {clock(to_minutes(row.start_time))}")
 
 
 def hourly_appointments():
@@ -28,7 +28,7 @@ def hourly_appointments():
 	)
 
 	def no_show(row):
-		if get_datetime(f"{row.appointment_date} {clock(minutes(row.end_time))}") < now:
+		if get_datetime(f"{row.appointment_date} {clock(to_minutes(row.end_time))}") < now:
 			frappe.db.set_value("Spa Appointment", row.name, "status", "No Show")
 
 	each(open_rows, "No Show", no_show)
@@ -50,13 +50,13 @@ def hourly_appointments():
 	)
 
 	def remind(row):
-		if not now <= start_of(row) <= add_to_date(now, hours=lead, as_datetime=True):
+		if not now <= start_datetime(row) <= add_to_date(now, hours=lead, as_datetime=True):
 			return
 		if row.client_email:
 			frappe.sendmail(
 				recipients=[row.client_email],
 				subject="Your appointment reminder",
-				message=f"Your appointment at {row.branch} is on {row.appointment_date} at {clock(minutes(row.start_time))[:5]}.",
+				message=f"Your appointment at {row.branch} is on {row.appointment_date} at {clock(to_minutes(row.start_time))[:5]}.",
 			)
 		frappe.db.set_value("Spa Appointment", row.name, "reminder_sent", 1)
 

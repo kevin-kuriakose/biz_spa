@@ -34,15 +34,24 @@ class SpaMembership(Document):
 			)
 		self.status = "Active"
 
+	@posting.as_system
 	def on_submit(self):
 		plan = frappe.get_cached_doc("Spa Membership Plan", self.plan)
-		posting.sell(self, plan.item, self.rate, self.paid_amount, self.mode_of_payment, self.start_date)
+		posting.post_sale_invoice(
+			self,
+			item=plan.item,
+			amount=self.rate,
+			paid=self.paid_amount,
+			mode=self.mode_of_payment,
+			date=self.start_date,
+		)
 		frappe.db.set_value("Spa Client Profile", self.client, "membership_status", "Active")
 
 	def before_cancel(self):
 		if any(cint(r.sessions_used) for r in (self.entitlements or [])):
 			frappe.throw("This membership has used sessions and cannot be cancelled.")
 
+	@posting.as_system
 	def on_cancel(self):
 		posting.cancel_sale(self)
 		self.db_set("status", "Cancelled")

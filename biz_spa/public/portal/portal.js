@@ -62,7 +62,7 @@
 		} else {
 			const query = new URLSearchParams();
 			Object.entries(args).forEach(([k, v]) => {
-				if (v !== undefined && v !== null && v !== "")
+				if (v !== undefined && v !== null)
 					query.set(k, typeof v === "object" ? JSON.stringify(v) : v);
 			});
 			url += `?${query}`;
@@ -658,6 +658,21 @@
 		return el.value === "" ? null : el.value;
 	};
 
+	const STATUS_ACTIONS = {
+		Scheduled: [
+			["Confirmed", "Confirm"],
+			["No Show", "Mark No Show"],
+		],
+		Confirmed: [["No Show", "Mark No Show"]],
+		"Checked In": [
+			["In Progress", "Start Treatment"],
+			["No Show", "Mark No Show"],
+		],
+		"In Progress": [["No Show", "Mark No Show"]],
+		Cancelled: [["Scheduled", "Reinstate"]],
+		"No Show": [["Scheduled", "Reinstate"]],
+	};
+
 	/* Form */
 	async function form(doctype, name) {
 		view(`${pageHead(docTitle(doctype))}<div class="empty">Loading…</div>`);
@@ -807,7 +822,13 @@
 				["Scheduled", "Confirmed"].includes(doc.status) &&
 				meta.perms.write
 			)
-				a += `<button class="btn btn-navy" id="checkin">Check In</button>`;
+				a += `<button class="btn btn-navy" id="checkin">Check In</button><button class="btn btn-danger" id="appt-cancel">Cancel Appointment</button>`;
+			if (doctype === "Spa Appointment" && !isNew && meta.perms.write)
+				(STATUS_ACTIONS[doc.status] || []).forEach(([status, label]) => {
+					a += `<button class="btn btn-ghost" data-status="${esc(status)}">${esc(
+						label
+					)}</button>`;
+				});
 			return a;
 		};
 		const paint = () => {
@@ -896,6 +917,35 @@
 							{ post: true }
 						);
 						toast("Cancelled");
+						form(doctype, doc.name);
+					});
+			});
+			root.querySelectorAll("[data-status]").forEach((b) => {
+				b.onclick = () =>
+					guard(async () => {
+						await call(
+							"biz_spa.api.booking.set_appointment_status",
+							{ name: doc.name, status: b.dataset.status },
+							{ post: true }
+						);
+						toast("Status updated");
+						form(doctype, doc.name);
+					});
+			});
+			bind("#appt-cancel", () => {
+				const reason = prompt("Reason for cancelling");
+				if (reason?.trim())
+					guard(async () => {
+						const r = await call(
+							"biz_spa.api.booking.cancel_appointment",
+							{ name: doc.name, reason: reason.trim() },
+							{ post: true }
+						);
+						toast(
+							r.cancellation_fee
+								? `Cancelled, late fee ${money(r.cancellation_fee)}`
+								: "Cancelled"
+						);
 						form(doctype, doc.name);
 					});
 			});

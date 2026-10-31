@@ -37,16 +37,23 @@ class SpaClientPackage(Document):
 		self.balance_sessions = self.total_sessions
 		self.status = "Active"
 
+	@posting.as_system
 	def on_submit(self):
 		package = frappe.get_cached_doc("Spa Package", self.package)
-		posting.sell(
-			self, package.item, self.net_amount, self.paid_amount, self.mode_of_payment, self.purchase_date
+		posting.post_sale_invoice(
+			self,
+			item=package.item,
+			amount=self.net_amount,
+			paid=self.paid_amount,
+			mode=self.mode_of_payment,
+			date=self.purchase_date,
 		)
 
 	def before_cancel(self):
 		if cint(self.used_sessions):
 			frappe.throw("This package has used sessions and cannot be cancelled.")
 
+	@posting.as_system
 	def on_cancel(self):
 		posting.cancel_sale(self)
 		self.db_set("status", "Cancelled")

@@ -5,6 +5,7 @@ from frappe.model.document import Document
 from frappe.utils import flt, getdate
 
 from biz_spa import posting
+from biz_spa.utils import settings
 
 
 class SpaGiftCard(Document):
@@ -36,19 +37,20 @@ class SpaGiftCard(Document):
 			},
 		)
 
+	@posting.as_system
 	def on_submit(self):
-		settings = frappe.get_cached_doc("Spa Settings")
-		if not settings.gift_card_item:
+		config = settings()
+		if not config.gift_card_item:
 			frappe.throw("Set Gift Card Item in Spa Settings.")
-		posting.sell(
+		posting.post_sale_invoice(
 			self,
-			settings.gift_card_item,
-			self.initial_value,
-			self.paid_amount,
-			self.mode_of_payment,
-			self.issue_date,
+			item=config.gift_card_item,
+			amount=self.initial_value,
+			paid=self.paid_amount,
+			mode=self.mode_of_payment,
+			date=self.issue_date,
 			taxed=False,
-			income_account=settings.gift_card_liability_account,
+			income_account=config.gift_card_liability_account,
 			customer=self.purchaser,
 		)
 
@@ -56,6 +58,7 @@ class SpaGiftCard(Document):
 		if flt(self.balance) < flt(self.initial_value):
 			frappe.throw("This gift card has been used and cannot be cancelled.")
 
+	@posting.as_system
 	def on_cancel(self):
 		posting.cancel_sale(self)
 		self.db_set("status", "Cancelled")

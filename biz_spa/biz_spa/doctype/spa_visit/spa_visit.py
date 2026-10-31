@@ -3,15 +3,15 @@ from frappe.model.document import Document
 from frappe.utils import flt, nowtime
 
 from biz_spa import posting
+from biz_spa.utils import settings
 
 
 class SpaVisit(Document):
 	ignore_linked_doctypes = posting.LINKED
 
 	def validate(self):
-		settings = frappe.get_cached_doc("Spa Settings")
 		self.posting_time = self.posting_time or nowtime()
-		self.taxes_and_charges = self.taxes_and_charges or settings.tax_template
+		self.taxes_and_charges = self.taxes_and_charges or settings().tax_template
 		self.compute_services()
 		self.compute_products()
 		self.compute_consumables()
@@ -24,13 +24,13 @@ class SpaVisit(Document):
 			row.qty = flt(row.qty) or 1
 			if not flt(row.rate):
 				row.rate = flt(service.price)
-			row.amount = flt(row.qty) * flt(row.rate) * (1 - flt(row.discount_percent) / 100)
+			row.amount = posting.line_amount(row.qty, row.rate, row.discount_percent)
 			total += flt(row.amount)
 			if row.redeem_from in ("Package", "Membership"):
 				redeemed += flt(row.amount)
 			self.compute_commission(row, service)
-		self.total_services = total
-		self.package_redeemed_value = redeemed
+		self.total_services = flt(total, 2)
+		self.package_redeemed_value = flt(redeemed, 2)
 
 	def compute_commission(self, row, service):
 		"""18.4: redeemed lines earn on list price, everything else on the discounted amount."""
@@ -55,7 +55,7 @@ class SpaVisit(Document):
 			row.qty = flt(row.qty) or 1
 			if not flt(row.rate):
 				row.rate = flt(frappe.db.get_value("Item", row.item, "standard_rate"))
-			row.amount = flt(row.qty) * flt(row.rate) * (1 - flt(row.discount_percent) / 100)
+			row.amount = posting.line_amount(row.qty, row.rate, row.discount_percent)
 			total += flt(row.amount)
 			row.commission_amount = 0
 			if row.sold_by:
@@ -64,11 +64,15 @@ class SpaVisit(Document):
 					* flt(frappe.get_cached_value("Spa Staff Profile", row.sold_by, "commission_rate"))
 					/ 100
 				)
-		self.total_products = total
+		self.total_products = flt(total, 2)
 
 	def compute_consumables(self):
-		if self.consumables:
+		"""Rows carrying a service came from the service definition; rows without one were added by
+		hand and always stay. Unchanged services keep their rows, so edited quantities survive a save."""
+		before = self.get_doc_before_save()
+		if self.consumables and (not before or self.service_key(before) == self.service_key(self)):
 			return
+		self.set("consumables", [r for r in self.consumables or [] if not r.service])
 		for row in self.services or []:
 			for used in frappe.get_cached_doc("Spa Service", row.service).consumables or []:
 				self.append(
@@ -82,22 +86,27 @@ class SpaVisit(Document):
 					},
 				)
 
+	@staticmethod
+	def service_key(doc):
+		return sorted((r.service, flt(r.qty)) for r in (doc.services or []))
+
 	def billable(self):
 		return flt(self.total_services) - flt(self.package_redeemed_value) + flt(self.total_products)
 
 	def compute_totals(self):
 		self.discount_amount = posting.promotion_discount(self)
 		net = self.billable() - flt(self.discount_amount)
-		self.tax_amount = flt(net * posting.tax_percent(self.taxes_and_charges) / 100, 2)
-		self.grand_total = (
+		self.tax_amount = posting.tax_amount(self.taxes_and_charges, net)
+		self.grand_total = flt(
 			flt(self.total_services)
 			+ flt(self.total_products)
 			- flt(self.discount_amount)
 			+ flt(self.tax_amount)
-			+ flt(self.tip_amount)
+			+ flt(self.tip_amount),
+			2,
 		)
-		self.gift_card_redeemed = sum(flt(r.amount) for r in (self.payments or []) if r.gift_card)
-		self.paid_amount = sum(flt(r.amount) for r in (self.payments or []) if not r.gift_card)
+		self.gift_card_redeemed = flt(sum(flt(r.amount) for r in (self.payments or []) if r.gift_card), 2)
+		self.paid_amount = flt(sum(flt(r.amount) for r in (self.payments or []) if not r.gift_card), 2)
 		self.outstanding_amount = flt(
 			self.grand_total
 			- flt(self.package_redeemed_value)
@@ -112,12 +121,13 @@ class SpaVisit(Document):
 	def before_submit(self):
 		if not (self.services or self.products):
 			frappe.throw("Add at least one service or product.")
-		if abs(flt(self.outstanding_amount)) > 0.01:
+		if flt(self.outstanding_amount, 2):
 			frappe.throw(
 				f"Payments and redemptions must equal the grand total. Difference: {self.outstanding_amount}"
 			)
 		posting.check_redemptions(self)
 
+	@posting.as_system
 	def on_submit(self):
 		si = posting.post_visit_invoice(self)
 		self.db_set("sales_invoice", si.name)
@@ -129,9 +139,23 @@ class SpaVisit(Document):
 		posting.update_after_visit(self, 1)
 
 	def before_cancel(self):
-		if frappe.db.exists("Spa Commission Entry", {"visit": self.name, "status": "Paid"}):
+		entries = frappe.db.get_values(
+			"Spa Commission Entry", {"visit": self.name}, ["name", "status"], as_dict=True, for_update=True
+		)
+		if any(row.status == "Paid" for row in entries):
 			frappe.throw("Commission from this visit has been paid. Cancel the payout first.")
+		drafts = frappe.get_all(
+			"Spa Commission Payout Line",
+			filters={"commission_entry": ("in", [row.name for row in entries] or [""]), "docstatus": 0},
+			pluck="parent",
+			distinct=True,
+		)
+		if drafts:
+			frappe.throw(
+				f"Commission from this visit is on draft payout {', '.join(drafts)}. Remove it from the payout first."
+			)
 
+	@posting.as_system
 	def on_cancel(self):
 		frappe.db.delete("Spa Commission Entry", {"visit": self.name, "status": "Unpaid"})
 		posting.cancel_doc("Stock Entry", self.stock_entry)

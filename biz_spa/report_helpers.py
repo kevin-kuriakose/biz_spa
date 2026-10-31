@@ -1,7 +1,7 @@
 import frappe
 from frappe.utils import add_days, date_diff, getdate
 
-from biz_spa.booking_rules import minutes
+from biz_spa.booking_rules import to_minutes
 
 
 def col(label, fieldname, fieldtype="Data", options=None, width=130):
@@ -22,7 +22,7 @@ def shift_minutes(staff, from_date, to_date):
 	total = 0
 	for day in days(from_date, to_date):
 		name = getdate(day).strftime("%A")
-		total += sum(minutes(s.to_time) - minutes(s.from_time) for s in shifts if s.weekday == name)
+		total += sum(to_minutes(s.to_time) - to_minutes(s.from_time) for s in shifts if s.weekday == name)
 	return total
 
 
@@ -35,5 +35,5 @@ def branch_open_minutes(branch, from_date, to_date):
 	total = 0
 	for day in days(from_date, to_date):
 		name = getdate(day).strftime("%A")
-		total += sum(minutes(h.close_time) - minutes(h.open_time) for h in hours if h.weekday == name)
+		total += sum(to_minutes(h.close_time) - to_minutes(h.open_time) for h in hours if h.weekday == name)
 	return total

@@ -304,12 +304,16 @@
 				if (join)
 					join.onclick = () =>
 						guard(async () => {
-							await call(
+							const joined = await call(
 								"join_waitlist",
 								{ branch: flow.branch, service: first, date: asked },
 								{ post: true }
 							);
-							toast("You're on the waitlist");
+							toast(
+								joined.created
+									? "You're on the waitlist"
+									: "You're already on the waitlist for this date"
+							);
 							join.disabled = true;
 						});
 				return;
@@ -418,7 +422,7 @@
 		if (!state.me.is_customer)
 			return `<div class="cx-notice">You're signed in with a staff account. Sign out to book as a customer.</div>`;
 		if (!state.me.client)
-			return `<div class="cx-notice">We found your details on file. To protect your history, reception needs to link this account before you can book. Please call the spa and give them <strong>${esc(
+			return `<div class="cx-notice">We need to confirm your account before you can book online. If we sent you an email, please use the link in it. Otherwise call the spa and give them <strong>${esc(
 				state.me.user
 			)}</strong>.</div>`;
 		return `<div class="cx-notice">Online booking isn't available on your account. Please call the spa.</div>`;
@@ -891,6 +895,17 @@
 			});
 	}
 
+	async function verify(token) {
+		main(`<div class="muted">Confirming your account…</div>`);
+		try {
+			await call("verify_link", { token }, { post: true });
+			location.replace("/spa#/bookings");
+			location.reload();
+		} catch (e) {
+			main(`<div class="cx-notice">${esc(e.message)}</div>`);
+		}
+	}
+
 	/* Routing */
 	function route() {
 		const [page_, arg] = location.hash.replace(/^#\/?/, "").split("/");
@@ -902,6 +917,7 @@
 			(page_ === "booked" && (() => booked(name))) ||
 			(page_ === "move" && (() => move(name))) ||
 			(page_ === "rate" && (() => rate(name))) ||
+			(page_ === "verify" && (() => verify(name))) ||
 			services
 		)());
 	}

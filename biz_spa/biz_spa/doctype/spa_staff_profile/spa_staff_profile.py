@@ -1,6 +1,8 @@
 import frappe
 from frappe.model.document import Document
 
+from biz_spa.booking_rules import to_minutes
+
 
 class SpaStaffProfile(Document):
 	def validate(self):
@@ -10,7 +12,7 @@ class SpaStaffProfile(Document):
 				frappe.throw(f"{row.service} appears twice in Skills.")
 			seen.add(row.service)
 		for row in self.shifts or []:
-			if str(row.from_time).zfill(8) >= str(row.to_time).zfill(8):
+			if to_minutes(row.from_time) >= to_minutes(row.to_time):
 				frappe.throw(f"Shift start must be before its end on {row.weekday}.")
 		if self.user:
 			other = frappe.db.get_value("Spa Staff Profile", {"user": self.user, "name": ("!=", self.name)})

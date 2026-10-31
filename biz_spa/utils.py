@@ -2,6 +2,10 @@ import frappe
 from frappe.utils import flt
 
 
+def settings():
+	return frappe.get_cached_doc("Spa Settings")
+
+
 def ensure_item(doc):
 	"""Creates the non-stock Item for a service, package or plan when none is linked (18.1)."""
 	if doc.item:

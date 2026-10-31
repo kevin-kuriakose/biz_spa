@@ -1,77 +1,65 @@
 import json
-from contextlib import contextmanager
 
 import frappe
 from frappe.utils import cint, flt, get_datetime, getdate, now_datetime, nowdate
-from frappe.utils.synchronization import filelock
 
-from biz_spa.booking_rules import ACTIVE, branch_hours, check_line, clock, minutes
-
-
-@contextmanager
-def booking_lock():
-	"""One booking at a time, so two people cannot both take the last free slot."""
-	with filelock("spa_booking", timeout=15):
-		# A fresh read, so a booking saved while this one waited is seen.
-		frappe.db.commit()
-		yield
-		frappe.db.commit()
+from biz_spa.booking_rules import ACTIVE, Day, clean_date, clean_start, clock, to_minutes
+from biz_spa.utils import settings
 
 
 def as_list(value):
-	return json.loads(value) if isinstance(value, str) else (value or [])
+	try:
+		rows = json.loads(value) if isinstance(value, str) else (value or [])
+	except ValueError:
+		frappe.throw("Services must be a list.")
+	if not isinstance(rows, list):
+		frappe.throw("Services must be a list.")
+	return rows
 
 
 def service_rows(services):
-	return [row if isinstance(row, dict) else {"service": row} for row in as_list(services)]
+	rows = [row if isinstance(row, dict) else {"service": row} for row in as_list(services)]
+	for row in rows:
+		service = row.get("service")
+		if not isinstance(service, str) or not frappe.db.get_value("Spa Service", service, "is_active"):
+			frappe.throw("Choose a valid service.")
+	return rows
 
 
-def candidates(row, branch, staff):
+def active_branch(branch):
+	if not branch or not frappe.db.get_value("Spa Branch", branch, "is_active"):
+		frappe.throw("Choose a branch.")
+	return branch
+
+
+def candidates(day, row, staff):
 	picked = row.get("staff") or staff
 	if picked:
 		return [picked]
-	return frappe.get_all(
-		"Spa Staff Skill",
-		filters={"service": row["service"], "parenttype": "Spa Staff Profile"},
-		pluck="parent",
-	)
+	return [person for person in day.skilled(row["service"]) if person in day.bookable]
 
 
-def rooms_for(service, branch, room):
+def rooms_for(day, service, room):
 	if room:
 		return [room]
 	room_type = frappe.get_cached_value("Spa Service", service, "room_type_required")
-	if not room_type:
-		return [None]
-	return (
-		frappe.get_all(
-			"Spa Room", filters={"branch": branch, "room_type": room_type, "is_active": 1}, pluck="name"
-		)
-		or []
-	)
+	return day.rooms_of_type(room_type) if room_type else [None]
 
 
-def assign(branch, date, start, services, staff=None, exclude=None):
+def assign(day, start, services, staff=None):
 	"""Picks free staff and rooms for services run back to back; None when the slot does not fit."""
 	cursor, plan = start, []
 	for row in services:
 		service = row["service"]
-		duration = cint(frappe.get_cached_value("Spa Service", service, "duration_minutes"))
-		end = cursor + duration
+		end = cursor + cint(frappe.get_cached_value("Spa Service", service, "duration_minutes"))
 		choice = None
-		for person in candidates(row, branch, staff):
-			if (
-				not row.get("staff")
-				and not staff
-				and not frappe.db.get_value("Spa Staff Profile", person, "is_bookable")
-			):
-				continue
+		for person in candidates(day, row, staff):
 			if any(p["staff"] == person and p["start"] < end and cursor < p["end"] for p in plan):
 				continue
-			for room in rooms_for(service, branch, row.get("room")):
+			for room in rooms_for(day, service, row.get("room")):
 				if any(room and p["room"] == room and p["start"] < end and cursor < p["end"] for p in plan):
 					continue
-				if not check_line(branch, date, service, person, room, cursor, end, exclude):
+				if not day.check(service, person, room, cursor, end):
 					choice = {"service": service, "staff": person, "room": room, "start": cursor, "end": end}
 					break
 			if choice:
@@ -83,34 +71,33 @@ def assign(branch, date, start, services, staff=None, exclude=None):
 	return plan
 
 
+def slot_starts(day):
+	"""Start times on offer for this day, inside the booking window and not yet past."""
+	config = settings()
+	today = getdate(nowdate())
+	if not day.hours or day.date < today or (day.date - today).days > cint(config.booking_window_days or 60):
+		return []
+	floor = day.hours[0]
+	if day.date == today:
+		now = now_datetime()
+		floor = max(floor, now.hour * 60 + now.minute)
+	step = cint(config.slot_interval_minutes) or 15
+	return [start for start in range(day.hours[0], day.hours[1], step) if start >= floor]
+
+
 @frappe.whitelist()
 def get_available_slots(branch, date, services, staff=None):
 	frappe.has_permission("Spa Appointment", "read", throw=True)
-	return open_slots(branch, date, service_rows(services), staff)
+	return open_slots(active_branch(branch), clean_date(date), service_rows(services), staff)
 
 
 def open_slots(branch, date, rows, staff=None, exclude=None):
-	settings = frappe.get_cached_doc("Spa Settings")
-	today = getdate(nowdate())
-	if (
-		not rows
-		or getdate(date) < today
-		or (getdate(date) - today).days > cint(settings.booking_window_days or 60)
-	):
+	if not rows:
 		return []
-	hours = branch_hours(branch, date)
-	if isinstance(hours, str):
-		return []
-	step = cint(settings.slot_interval_minutes) or 15
-	floor = hours[0]
-	if getdate(date) == today:
-		now = now_datetime()
-		floor = max(floor, now.hour * 60 + now.minute)
+	day = Day(branch, date, exclude)
 	slots = []
-	for start in range(hours[0], hours[1], step):
-		if start < floor:
-			continue
-		plan = assign(branch, date, start, rows, staff, exclude)
+	for start in slot_starts(day):
+		plan = assign(day, start, rows, staff)
 		if plan:
 			slots.append(
 				{
@@ -122,32 +109,40 @@ def open_slots(branch, date, rows, staff=None, exclude=None):
 	return slots
 
 
+def plan_at(branch, date, rows, start, staff=None, exclude=None):
+	"""The plan for the one start time being booked, under the same rules as open_slots. It only
+	screens the request: the Spa Appointment controller claims the slot when the document saves."""
+	day = Day(branch, date, exclude)
+	return assign(day, start, rows, staff) if start in slot_starts(day) else None
+
+
 @frappe.whitelist()
 def book_appointment(client, branch, date, start_time, services, source="Phone"):
 	frappe.has_permission("Spa Appointment", "create", throw=True)
-	with booking_lock():
-		plan = assign(branch, date, minutes(start_time), service_rows(services))
-		if not plan:
-			frappe.throw("That slot is no longer available.")
-		doc = frappe.get_doc(
-			{
-				"doctype": "Spa Appointment",
-				"client": client,
-				"branch": branch,
-				"appointment_date": date,
-				"start_time": start_time,
-				"source": source,
-				"services": [
-					{
-						"service": p["service"],
-						"staff": p["staff"],
-						"room": p["room"],
-						"start_time": clock(p["start"]),
-					}
-					for p in plan
-				],
-			}
-		).insert()
+	active_branch(branch)
+	date, start = clean_date(date), clean_start(start_time)
+	plan = plan_at(branch, date, service_rows(services), start)
+	if not plan:
+		frappe.throw("That slot is no longer available.")
+	doc = frappe.get_doc(
+		{
+			"doctype": "Spa Appointment",
+			"client": client,
+			"branch": branch,
+			"appointment_date": date,
+			"start_time": clock(start),
+			"source": source,
+			"services": [
+				{
+					"service": p["service"],
+					"staff": p["staff"],
+					"room": p["room"],
+					"start_time": clock(p["start"]),
+				}
+				for p in plan
+			],
+		}
+	).insert()
 	return doc.name
 
 
@@ -157,14 +152,28 @@ def reschedule_appointment(name, date, start_time):
 	doc.check_permission("write")
 	if doc.status not in ACTIVE:
 		frappe.throw(f"A {doc.status} appointment cannot be rescheduled.")
-	shift = minutes(start_time) - minutes(doc.start_time)
-	doc.appointment_date, doc.start_time = date, start_time
+	date, start = clean_date(date), clean_start(start_time)
+	shift = start - to_minutes(doc.start_time)
+	doc.appointment_date, doc.start_time = date, clock(start)
 	for row in doc.services or []:
 		if row.fixed_start:
-			row.start_time = clock(minutes(row.start_time) + shift)
+			row.start_time = clock(to_minutes(row.start_time) + shift)
 	doc.reminder_sent = 0
 	doc.save()
 	return doc.name
+
+
+@frappe.whitelist(methods=["POST"])
+def set_appointment_status(name, status):
+	"""The statuses staff set by hand. Check In, Cancel and Completed have their own paths because
+	they create the visit, record the fee or follow the visit's submit."""
+	doc = frappe.get_doc("Spa Appointment", name)
+	doc.check_permission("write")
+	if status not in ("Scheduled", "Confirmed", "In Progress", "No Show"):
+		frappe.throw(f"{status} cannot be set by hand.")
+	doc.status = status
+	doc.save()
+	return doc.status
 
 
 @frappe.whitelist()
@@ -177,12 +186,11 @@ def cancel_appointment(name, reason):
 def cancel_doc(doc, reason):
 	if doc.status not in ACTIVE:
 		frappe.throw(f"A {doc.status} appointment cannot be cancelled.")
-	settings = frappe.get_cached_doc("Spa Settings")
-	starts = get_datetime(f"{doc.appointment_date} {clock(minutes(doc.start_time))}")
+	starts = get_datetime(f"{doc.appointment_date} {clock(to_minutes(doc.start_time))}")
 	hours_left = (starts - now_datetime()).total_seconds() / 3600
 	doc.status, doc.cancelled_reason = "Cancelled", reason
-	if hours_left < flt(settings.cancellation_window_hours):
-		doc.cancellation_fee = flt(doc.total_amount) * flt(settings.no_show_fee_percent) / 100
+	if hours_left < flt(settings().cancellation_window_hours):
+		doc.cancellation_fee = flt(flt(doc.total_amount) * flt(settings().no_show_fee_percent) / 100, 2)
 	doc.save()
 	offered = offer_slot(doc)
 	return {"cancellation_fee": doc.cancellation_fee, "waitlist_offered": offered}
@@ -190,7 +198,7 @@ def cancel_doc(doc, reason):
 
 def offer_slot(doc):
 	"""Marks matching waitlist rows as Offered once a slot frees up (18.3)."""
-	start = minutes(doc.start_time)
+	start = to_minutes(doc.start_time)
 	window = "Morning" if start < 720 else "Afternoon" if start < 1020 else "Evening"
 	offered = []
 	for row in doc.services or []:

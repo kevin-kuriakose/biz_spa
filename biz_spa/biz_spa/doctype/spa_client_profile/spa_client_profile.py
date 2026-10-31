@@ -1,6 +1,8 @@
 import frappe
 from frappe.model.document import Document
 
+from biz_spa.utils import settings
+
 
 class SpaClientProfile(Document):
 	def validate(self):
@@ -21,18 +23,18 @@ class SpaClientProfile(Document):
 	def after_insert(self):
 		if self.customer:
 			return
-		settings = frappe.get_cached_doc("Spa Settings")
-		if not settings.default_customer_group:
+		config = settings()
+		if not config.default_customer_group:
 			frappe.throw("Set Default Customer Group in Spa Settings before adding clients.")
 		customer = frappe.get_doc(
 			{
 				"doctype": "Customer",
 				"customer_name": self.client_name,
 				"customer_type": "Individual",
-				"customer_group": settings.default_customer_group,
+				"customer_group": config.default_customer_group,
 				"mobile_no": self.mobile,
 				"email_id": self.email,
-				"loyalty_program": self.loyalty_program or settings.default_loyalty_program,
+				"loyalty_program": self.loyalty_program or config.default_loyalty_program,
 			}
 		).insert(ignore_permissions=True)
 		self.db_set("customer", customer.name)
