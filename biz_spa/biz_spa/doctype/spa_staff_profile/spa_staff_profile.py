@@ -1,5 +1,5 @@
-from frappe.model.document import Document
 import frappe
+from frappe.model.document import Document
 
 
 class SpaStaffProfile(Document):
@@ -31,6 +31,13 @@ class SpaStaffProfile(Document):
 		for applicable_for in ("Spa Staff Profile", "Spa Staff Time Off", "Spa Commission Entry"):
 			if not frappe.db.exists("DocType", applicable_for):
 				continue
-			filters = {"user": self.user, "allow": "Spa Staff Profile", "for_value": self.name, "applicable_for": applicable_for}
+			filters = {
+				"user": self.user,
+				"allow": "Spa Staff Profile",
+				"for_value": self.name,
+				"applicable_for": applicable_for,
+			}
 			if not frappe.db.exists("User Permission", filters):
-				frappe.get_doc({"doctype": "User Permission", "apply_to_all_doctypes": 0, **filters}).insert(ignore_permissions=True)
+				frappe.get_doc({"doctype": "User Permission", "apply_to_all_doctypes": 0, **filters}).insert(
+					ignore_permissions=True
+				)

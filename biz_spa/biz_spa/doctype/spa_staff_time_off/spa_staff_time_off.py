@@ -1,5 +1,5 @@
-from frappe.model.document import Document
 import frappe
+from frappe.model.document import Document
 from frappe.utils import get_datetime
 
 

@@ -62,7 +62,11 @@ incident_access = field_access("staff")
 
 
 def therapist_only(user):
-	return "Spa Therapist" in frappe.get_roles(user) and not set(frappe.get_roles(user)) & FULL_VIEW and user != "Administrator"
+	return (
+		"Spa Therapist" in frappe.get_roles(user)
+		and not set(frappe.get_roles(user)) & FULL_VIEW
+		and user != "Administrator"
+	)
 
 
 def user_query(user=None):
@@ -86,11 +90,13 @@ def client_access(doc, ptype=None, user=None):
 	staff = own_staff(user)
 	if staff is None:
 		return True
-	return bool(frappe.db.sql(
-		"""SELECT 1 FROM `tabSpa Appointment` a JOIN `tabSpa Appointment Service` l ON l.parent = a.name
+	return bool(
+		frappe.db.sql(
+			"""SELECT 1 FROM `tabSpa Appointment` a JOIN `tabSpa Appointment Service` l ON l.parent = a.name
 		WHERE a.client = %s AND l.staff = %s LIMIT 1""",
-		(doc.name, staff),
-	))
+			(doc.name, staff),
+		)
+	)
 
 
 SPA_ROLES = {"Spa Manager", "Spa Receptionist", "Spa Therapist", "Spa Accountant"}
@@ -100,6 +106,12 @@ def apply_staff_access(doc, method=None):
 	"""Gives spa staff the Module Profile that hides every other app. System Managers keep theirs."""
 	roles = {r.role for r in (doc.roles or [])}
 	if doc.role_profile_name:
-		roles |= set(frappe.get_all("Has Role", filters={"parent": doc.role_profile_name, "parenttype": "Role Profile"}, pluck="role"))
+		roles |= set(
+			frappe.get_all(
+				"Has Role",
+				filters={"parent": doc.role_profile_name, "parenttype": "Role Profile"},
+				pluck="role",
+			)
+		)
 	if roles & SPA_ROLES and "System Manager" not in roles and doc.name != "Administrator":
 		doc.module_profile = "Spa Staff"

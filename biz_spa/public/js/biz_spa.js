@@ -2,10 +2,19 @@
 frappe.provide("biz_spa");
 
 biz_spa.REPORTS = [
-	"Daily Sales Summary", "Staff Utilization", "Staff Performance", "Commission Statement",
-	"Service Revenue and Popularity", "Lapsed Clients", "No-Show and Cancellation Analysis",
-	"Package Balance and Liability", "Gift Card Liability Register", "Membership Renewals Due",
-	"Consumable Usage", "Room Utilization", "Cash Close Variance",
+	"Daily Sales Summary",
+	"Staff Utilization",
+	"Staff Performance",
+	"Commission Statement",
+	"Service Revenue and Popularity",
+	"Lapsed Clients",
+	"No-Show and Cancellation Analysis",
+	"Package Balance and Liability",
+	"Gift Card Liability Register",
+	"Membership Renewals Due",
+	"Consumable Usage",
+	"Room Utilization",
+	"Cash Close Variance",
 	"Client Birthdays and Anniversaries",
 ];
 
@@ -20,7 +29,10 @@ biz_spa.is_spa_route = function () {
 
 biz_spa.apply_theme = function () {
 	document.body.classList.toggle("biz-spa", biz_spa.is_spa_route());
-	document.body.classList.toggle("biz-spa-workspace", (frappe.get_route() || [])[0] === "Workspaces" && biz_spa.is_spa_route());
+	document.body.classList.toggle(
+		"biz-spa-workspace",
+		(frappe.get_route() || [])[0] === "Workspaces" && biz_spa.is_spa_route()
+	);
 };
 
 $(document).on("page-change", () => biz_spa.apply_theme());
@@ -29,9 +41,17 @@ $(() => biz_spa.apply_theme());
 
 // Lucide icons on workspace cards, per the design system's icon + title pattern (20px, 16px gap).
 biz_spa.CARD_ICONS = {
-	"Front Desk": "calendar-days", Billing: "receipt-text", Prepaid: "wallet", Staff: "users",
-	Services: "flower-2", Quality: "star", Setup: "settings", Reports: "chart-column",
-	"My Day": "calendar-days", "My Work": "clipboard-list", "My Pay and Leave": "wallet",
+	"Front Desk": "calendar-days",
+	Billing: "receipt-text",
+	Prepaid: "wallet",
+	Staff: "users",
+	Services: "flower-2",
+	Quality: "star",
+	Setup: "settings",
+	Reports: "chart-column",
+	"My Day": "calendar-days",
+	"My Work": "clipboard-list",
+	"My Pay and Leave": "wallet",
 };
 
 biz_spa.decorate_cards = function () {
@@ -64,12 +84,22 @@ biz_spa.is_staff_only = function () {
 };
 
 biz_spa.can_open_page = function (name) {
-	return !name || frappe.standard_pages[name] || (frappe.boot.page_info && frappe.boot.page_info[name]);
+	return (
+		!name ||
+		frappe.standard_pages[name] ||
+		(frappe.boot.page_info && frappe.boot.page_info[name])
+	);
 };
 
 biz_spa.go_home = function () {
-	frappe.show_alert({ message: __("That page isn't available for your role."), indicator: "orange" });
-	frappe.set_route("Workspaces", biz_spa.user_roles().includes("Spa Therapist") ? "My Spa" : "Biz Spa");
+	frappe.show_alert({
+		message: __("That page isn't available for your role."),
+		indicator: "orange",
+	});
+	frappe.set_route(
+		"Workspaces",
+		biz_spa.user_roles().includes("Spa Therapist") ? "My Spa" : "Biz Spa"
+	);
 };
 
 if (frappe.views && frappe.views.pageview) {

@@ -1,7 +1,8 @@
-from frappe.model.document import Document
 import frappe
+from frappe.model.document import Document
+from frappe.utils import add_months, cint, flt
+
 from biz_spa import posting
-from frappe.utils import add_months, cint, flt, getdate
 
 
 class SpaMembership(Document):
@@ -21,7 +22,16 @@ class SpaMembership(Document):
 		self.set("entitlements", [])
 		period_end = add_months(self.start_date, 1)
 		for row in plan.benefits or []:
-			self.append("entitlements", {"service": row.service, "period_start": self.start_date, "period_end": period_end, "sessions_allowed": row.sessions_per_month, "sessions_used": 0})
+			self.append(
+				"entitlements",
+				{
+					"service": row.service,
+					"period_start": self.start_date,
+					"period_end": period_end,
+					"sessions_allowed": row.sessions_per_month,
+					"sessions_used": 0,
+				},
+			)
 		self.status = "Active"
 
 	def on_submit(self):

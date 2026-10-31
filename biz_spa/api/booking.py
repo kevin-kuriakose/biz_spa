@@ -1,9 +1,8 @@
 import json
-
-import frappe
 from contextlib import contextmanager
 
-from frappe.utils import add_days, cint, flt, get_datetime, getdate, now_datetime, nowdate
+import frappe
+from frappe.utils import cint, flt, get_datetime, getdate, now_datetime, nowdate
 from frappe.utils.synchronization import filelock
 
 from biz_spa.booking_rules import ACTIVE, branch_hours, check_line, clock, minutes
@@ -44,7 +43,12 @@ def rooms_for(service, branch, room):
 	room_type = frappe.get_cached_value("Spa Service", service, "room_type_required")
 	if not room_type:
 		return [None]
-	return frappe.get_all("Spa Room", filters={"branch": branch, "room_type": room_type, "is_active": 1}, pluck="name") or []
+	return (
+		frappe.get_all(
+			"Spa Room", filters={"branch": branch, "room_type": room_type, "is_active": 1}, pluck="name"
+		)
+		or []
+	)
 
 
 def assign(branch, date, start, services, staff=None, exclude=None):
@@ -56,7 +60,11 @@ def assign(branch, date, start, services, staff=None, exclude=None):
 		end = cursor + duration
 		choice = None
 		for person in candidates(row, branch, staff):
-			if not row.get("staff") and not staff and not frappe.db.get_value("Spa Staff Profile", person, "is_bookable"):
+			if (
+				not row.get("staff")
+				and not staff
+				and not frappe.db.get_value("Spa Staff Profile", person, "is_bookable")
+			):
 				continue
 			if any(p["staff"] == person and p["start"] < end and cursor < p["end"] for p in plan):
 				continue
@@ -84,7 +92,11 @@ def get_available_slots(branch, date, services, staff=None):
 def open_slots(branch, date, rows, staff=None, exclude=None):
 	settings = frappe.get_cached_doc("Spa Settings")
 	today = getdate(nowdate())
-	if not rows or getdate(date) < today or (getdate(date) - today).days > cint(settings.booking_window_days or 60):
+	if (
+		not rows
+		or getdate(date) < today
+		or (getdate(date) - today).days > cint(settings.booking_window_days or 60)
+	):
 		return []
 	hours = branch_hours(branch, date)
 	if isinstance(hours, str):
@@ -100,11 +112,13 @@ def open_slots(branch, date, rows, staff=None, exclude=None):
 			continue
 		plan = assign(branch, date, start, rows, staff, exclude)
 		if plan:
-			slots.append({
-				"start_time": clock(start),
-				"end_time": clock(plan[-1]["end"]),
-				"services": [{**p, "start": clock(p["start"]), "end": clock(p["end"])} for p in plan],
-			})
+			slots.append(
+				{
+					"start_time": clock(start),
+					"end_time": clock(plan[-1]["end"]),
+					"services": [{**p, "start": clock(p["start"]), "end": clock(p["end"])} for p in plan],
+				}
+			)
 	return slots
 
 
@@ -115,15 +129,25 @@ def book_appointment(client, branch, date, start_time, services, source="Phone")
 		plan = assign(branch, date, minutes(start_time), service_rows(services))
 		if not plan:
 			frappe.throw("That slot is no longer available.")
-		doc = frappe.get_doc({
-			"doctype": "Spa Appointment",
-			"client": client,
-			"branch": branch,
-			"appointment_date": date,
-			"start_time": start_time,
-			"source": source,
-			"services": [{"service": p["service"], "staff": p["staff"], "room": p["room"], "start_time": clock(p["start"])} for p in plan],
-		}).insert()
+		doc = frappe.get_doc(
+			{
+				"doctype": "Spa Appointment",
+				"client": client,
+				"branch": branch,
+				"appointment_date": date,
+				"start_time": start_time,
+				"source": source,
+				"services": [
+					{
+						"service": p["service"],
+						"staff": p["staff"],
+						"room": p["room"],
+						"start_time": clock(p["start"]),
+					}
+					for p in plan
+				],
+			}
+		).insert()
 	return doc.name
 
 
@@ -170,11 +194,18 @@ def offer_slot(doc):
 	window = "Morning" if start < 720 else "Afternoon" if start < 1020 else "Evening"
 	offered = []
 	for row in doc.services or []:
-		for name in frappe.get_all("Spa Waitlist Entry", filters={
-			"branch": doc.branch, "service": row.service, "status": "Waiting",
-			"date_from": ("<=", doc.appointment_date), "date_to": (">=", doc.appointment_date),
-			"time_window": ("in", ["Any", window]),
-		}, pluck="name"):
+		for name in frappe.get_all(
+			"Spa Waitlist Entry",
+			filters={
+				"branch": doc.branch,
+				"service": row.service,
+				"status": "Waiting",
+				"date_from": ("<=", doc.appointment_date),
+				"date_to": (">=", doc.appointment_date),
+				"time_window": ("in", ["Any", window]),
+			},
+			pluck="name",
+		):
 			frappe.db.set_value("Spa Waitlist Entry", name, "status", "Offered")
 			offered.append(name)
 	return offered
@@ -190,19 +221,31 @@ def check_in(appointment):
 	doc.save()
 	if not frappe.db.exists("DocType", "Spa Visit"):
 		return None
-	visit = frappe.get_doc({
-		"doctype": "Spa Visit",
-		"appointment": doc.name,
-		"client": doc.client,
-		"branch": doc.branch,
-		"posting_date": nowdate(),
-		"promotion": doc.promotion,
-		"services": [{
-			"service": r.service, "staff": r.staff, "room": r.room, "start_time": r.start_time,
-			"end_time": r.end_time, "qty": 1, "rate": r.rate, "discount_percent": r.discount_percent,
-			"amount": r.amount, "notes": r.notes,
-		} for r in (doc.services or [])],
-	}).insert()
+	visit = frappe.get_doc(
+		{
+			"doctype": "Spa Visit",
+			"appointment": doc.name,
+			"client": doc.client,
+			"branch": doc.branch,
+			"posting_date": nowdate(),
+			"promotion": doc.promotion,
+			"services": [
+				{
+					"service": r.service,
+					"staff": r.staff,
+					"room": r.room,
+					"start_time": r.start_time,
+					"end_time": r.end_time,
+					"qty": 1,
+					"rate": r.rate,
+					"discount_percent": r.discount_percent,
+					"amount": r.amount,
+					"notes": r.notes,
+				}
+				for r in (doc.services or [])
+			],
+		}
+	).insert()
 	return visit.name
 
 
@@ -213,8 +256,15 @@ def get_client_balances(client):
 
 
 def client_balances(client):
-	profile = frappe.db.get_value("Spa Client Profile", client, ["customer", "loyalty_points"], as_dict=True) or {}
-	result = {"loyalty_points": cint(profile.get("loyalty_points")), "packages": [], "memberships": [], "gift_cards": []}
+	profile = (
+		frappe.db.get_value("Spa Client Profile", client, ["customer", "loyalty_points"], as_dict=True) or {}
+	)
+	result = {
+		"loyalty_points": cint(profile.get("loyalty_points")),
+		"packages": [],
+		"memberships": [],
+		"gift_cards": [],
+	}
 	if frappe.db.exists("DocType", "Spa Client Package"):
 		result["packages"] = frappe.get_all(
 			"Spa Client Package",

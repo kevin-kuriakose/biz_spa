@@ -16,7 +16,9 @@ def days(from_date, to_date):
 
 
 def shift_minutes(staff, from_date, to_date):
-	shifts = frappe.get_all("Spa Staff Shift", filters={"parent": staff}, fields=["weekday", "from_time", "to_time"])
+	shifts = frappe.get_all(
+		"Spa Staff Shift", filters={"parent": staff}, fields=["weekday", "from_time", "to_time"]
+	)
 	total = 0
 	for day in days(from_date, to_date):
 		name = getdate(day).strftime("%A")
@@ -25,7 +27,11 @@ def shift_minutes(staff, from_date, to_date):
 
 
 def branch_open_minutes(branch, from_date, to_date):
-	hours = frappe.get_all("Spa Branch Hours", filters={"parent": branch, "is_closed": 0}, fields=["weekday", "open_time", "close_time"])
+	hours = frappe.get_all(
+		"Spa Branch Hours",
+		filters={"parent": branch, "is_closed": 0},
+		fields=["weekday", "open_time", "close_time"],
+	)
 	total = 0
 	for day in days(from_date, to_date):
 		name = getdate(day).strftime("%A")

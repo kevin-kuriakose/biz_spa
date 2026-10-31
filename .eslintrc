@@ -25,6 +25,7 @@
 	},
 	"root": true,
 	"globals": {
+		"biz_spa": true,
 		"frappe": true,
 		"Vue": true,
 		"SetVueGlobals": true,

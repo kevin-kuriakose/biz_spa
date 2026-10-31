@@ -1,5 +1,5 @@
 from frappe.model.document import Document
-import frappe
+
 from biz_spa.booking_rules import ACTIVE, compute_lines, validate_lines
 
 
@@ -19,5 +19,7 @@ class SpaAppointment(Document):
 
 	@staticmethod
 	def schedule_key(doc):
-		lines = [(r.service, r.staff, r.room, str(r.start_time), r.duration_minutes) for r in (doc.services or [])]
+		lines = [
+			(r.service, r.staff, r.room, str(r.start_time), r.duration_minutes) for r in (doc.services or [])
+		]
 		return (doc.branch, str(doc.appointment_date), str(doc.start_time), lines)

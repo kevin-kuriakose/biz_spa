@@ -1,7 +1,8 @@
-from frappe.model.document import Document
 import frappe
+from frappe.model.document import Document
+from frappe.utils import flt, nowtime
+
 from biz_spa import posting
-from frappe.utils import cint, flt, getdate, nowdate, nowtime
 
 
 class SpaVisit(Document):
@@ -36,7 +37,9 @@ class SpaVisit(Document):
 		row.commission_base = row.commission_rate = row.commission_amount = 0
 		if not row.staff:
 			return
-		staff = frappe.get_cached_value("Spa Staff Profile", row.staff, ["commission_type", "commission_rate"], as_dict=True)
+		staff = frappe.get_cached_value(
+			"Spa Staff Profile", row.staff, ["commission_type", "commission_rate"], as_dict=True
+		)
 		rate = flt(service.commission_rate) or flt(staff.commission_rate)
 		redeemed = row.redeem_from in ("Package", "Membership")
 		row.commission_base = flt(service.price) * flt(row.qty) if redeemed else flt(row.amount)
@@ -56,7 +59,11 @@ class SpaVisit(Document):
 			total += flt(row.amount)
 			row.commission_amount = 0
 			if row.sold_by:
-				row.commission_amount = flt(row.amount) * flt(frappe.get_cached_value("Spa Staff Profile", row.sold_by, "commission_rate")) / 100
+				row.commission_amount = (
+					flt(row.amount)
+					* flt(frappe.get_cached_value("Spa Staff Profile", row.sold_by, "commission_rate"))
+					/ 100
+				)
 		self.total_products = total
 
 	def compute_consumables(self):
@@ -64,7 +71,16 @@ class SpaVisit(Document):
 			return
 		for row in self.services or []:
 			for used in frappe.get_cached_doc("Spa Service", row.service).consumables or []:
-				self.append("consumables", {"item": used.item, "qty": flt(used.qty) * flt(row.qty), "uom": used.uom, "warehouse": self.warehouse, "service": row.service})
+				self.append(
+					"consumables",
+					{
+						"item": used.item,
+						"qty": flt(used.qty) * flt(row.qty),
+						"uom": used.uom,
+						"warehouse": self.warehouse,
+						"service": row.service,
+					},
+				)
 
 	def billable(self):
 		return flt(self.total_services) - flt(self.package_redeemed_value) + flt(self.total_products)
@@ -73,10 +89,23 @@ class SpaVisit(Document):
 		self.discount_amount = posting.promotion_discount(self)
 		net = self.billable() - flt(self.discount_amount)
 		self.tax_amount = flt(net * posting.tax_percent(self.taxes_and_charges) / 100, 2)
-		self.grand_total = flt(self.total_services) + flt(self.total_products) - flt(self.discount_amount) + flt(self.tax_amount) + flt(self.tip_amount)
+		self.grand_total = (
+			flt(self.total_services)
+			+ flt(self.total_products)
+			- flt(self.discount_amount)
+			+ flt(self.tax_amount)
+			+ flt(self.tip_amount)
+		)
 		self.gift_card_redeemed = sum(flt(r.amount) for r in (self.payments or []) if r.gift_card)
 		self.paid_amount = sum(flt(r.amount) for r in (self.payments or []) if not r.gift_card)
-		self.outstanding_amount = flt(self.grand_total - flt(self.package_redeemed_value) - flt(self.gift_card_redeemed) - flt(self.paid_amount) - posting.loyalty_value(self), 2)
+		self.outstanding_amount = flt(
+			self.grand_total
+			- flt(self.package_redeemed_value)
+			- flt(self.gift_card_redeemed)
+			- flt(self.paid_amount)
+			- posting.loyalty_value(self),
+			2,
+		)
 		if flt(self.tip_amount) and not self.tip_staff:
 			frappe.throw("Select the staff member receiving the tip.")
 
@@ -84,7 +113,9 @@ class SpaVisit(Document):
 		if not (self.services or self.products):
 			frappe.throw("Add at least one service or product.")
 		if abs(flt(self.outstanding_amount)) > 0.01:
-			frappe.throw(f"Payments and redemptions must equal the grand total. Difference: {self.outstanding_amount}")
+			frappe.throw(
+				f"Payments and redemptions must equal the grand total. Difference: {self.outstanding_amount}"
+			)
 		posting.check_redemptions(self)
 
 	def on_submit(self):

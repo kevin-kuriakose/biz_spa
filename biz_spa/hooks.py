@@ -1,7 +1,9 @@
 app_name = "biz_spa"
 app_title = "Biz Spa"
 app_publisher = "Kevin Kuriakose"
-app_description = "Appointments, billing, prepaid value and staff commission for a spa and salon, posting into ERPNext"
+app_description = (
+	"Appointments, billing, prepaid value and staff commission for a spa and salon, posting into ERPNext"
+)
 app_email = "gps.tech@bizaxl.com"
 app_license = "mit"
 

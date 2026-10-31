@@ -1,9 +1,10 @@
-from frappe.model.document import Document
 import secrets
 
 import frappe
-from biz_spa import posting
+from frappe.model.document import Document
 from frappe.utils import flt, getdate
+
+from biz_spa import posting
 
 
 class SpaGiftCard(Document):
@@ -25,13 +26,31 @@ class SpaGiftCard(Document):
 		self.balance = flt(self.initial_value)
 		self.status = "Active"
 		self.set("transactions", [])
-		self.append("transactions", {"txn_date": self.issue_date, "txn_type": "Issue", "amount": self.initial_value, "balance_after": self.initial_value})
+		self.append(
+			"transactions",
+			{
+				"txn_date": self.issue_date,
+				"txn_type": "Issue",
+				"amount": self.initial_value,
+				"balance_after": self.initial_value,
+			},
+		)
 
 	def on_submit(self):
 		settings = frappe.get_cached_doc("Spa Settings")
 		if not settings.gift_card_item:
 			frappe.throw("Set Gift Card Item in Spa Settings.")
-		posting.sell(self, settings.gift_card_item, self.initial_value, self.paid_amount, self.mode_of_payment, self.issue_date, taxed=False, income_account=settings.gift_card_liability_account, customer=self.purchaser)
+		posting.sell(
+			self,
+			settings.gift_card_item,
+			self.initial_value,
+			self.paid_amount,
+			self.mode_of_payment,
+			self.issue_date,
+			taxed=False,
+			income_account=settings.gift_card_liability_account,
+			customer=self.purchaser,
+		)
 
 	def before_cancel(self):
 		if flt(self.balance) < flt(self.initial_value):

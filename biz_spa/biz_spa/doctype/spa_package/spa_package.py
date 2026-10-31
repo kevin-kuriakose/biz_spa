@@ -1,4 +1,5 @@
 from frappe.model.document import Document
+
 from biz_spa.utils import ensure_item
 
 

@@ -38,7 +38,14 @@ def hourly_appointments():
 		return
 	upcoming = frappe.get_all(
 		"Spa Appointment",
-		filters={"status": ("in", ["Scheduled", "Confirmed"]), "reminder_sent": 0, "appointment_date": ("between", [nowdate(), add_to_date(now, hours=lead, as_datetime=True).date()])},
+		filters={
+			"status": ("in", ["Scheduled", "Confirmed"]),
+			"reminder_sent": 0,
+			"appointment_date": (
+				"between",
+				[nowdate(), add_to_date(now, hours=lead, as_datetime=True).date()],
+			),
+		},
 		fields=["name", "appointment_date", "start_time", "client_email", "branch"],
 	)
 
@@ -46,7 +53,11 @@ def hourly_appointments():
 		if not now <= start_of(row) <= add_to_date(now, hours=lead, as_datetime=True):
 			return
 		if row.client_email:
-			frappe.sendmail(recipients=[row.client_email], subject="Your appointment reminder", message=f"Your appointment at {row.branch} is on {row.appointment_date} at {clock(minutes(row.start_time))[:5]}.")
+			frappe.sendmail(
+				recipients=[row.client_email],
+				subject="Your appointment reminder",
+				message=f"Your appointment at {row.branch} is on {row.appointment_date} at {clock(minutes(row.start_time))[:5]}.",
+			)
 		frappe.db.set_value("Spa Appointment", row.name, "reminder_sent", 1)
 
 	each(upcoming, "Reminder", remind)
@@ -54,26 +65,65 @@ def hourly_appointments():
 
 def daily_housekeeping():
 	date = today()
-	each(frappe.get_all("Spa Client Package", filters={"docstatus": 1, "status": "Active", "expiry_date": ("<", date)}, pluck="name"), "Package expiry", lambda n: frappe.db.set_value("Spa Client Package", n, "status", "Expired"))
-	each(frappe.get_all("Spa Gift Card", filters={"docstatus": 1, "status": "Active", "expiry_date": ("<", date)}, pluck="name"), "Gift card expiry", lambda n: frappe.db.set_value("Spa Gift Card", n, "status", "Expired"))
+	each(
+		frappe.get_all(
+			"Spa Client Package",
+			filters={"docstatus": 1, "status": "Active", "expiry_date": ("<", date)},
+			pluck="name",
+		),
+		"Package expiry",
+		lambda n: frappe.db.set_value("Spa Client Package", n, "status", "Expired"),
+	)
+	each(
+		frappe.get_all(
+			"Spa Gift Card",
+			filters={"docstatus": 1, "status": "Active", "expiry_date": ("<", date)},
+			pluck="name",
+		),
+		"Gift card expiry",
+		lambda n: frappe.db.set_value("Spa Gift Card", n, "status", "Expired"),
+	)
 
 	def end_membership(row):
 		if row.auto_renew:
 			renew(row.name)
 		frappe.db.set_value("Spa Membership", row.name, "status", "Expired")
-		if not frappe.db.exists("Spa Membership", {"client": row.client, "docstatus": 1, "status": "Active", "name": ("!=", row.name)}):
+		if not frappe.db.exists(
+			"Spa Membership",
+			{"client": row.client, "docstatus": 1, "status": "Active", "name": ("!=", row.name)},
+		):
 			frappe.db.set_value("Spa Client Profile", row.client, "membership_status", "Expired")
 
-	each(frappe.get_all("Spa Membership", filters={"docstatus": 1, "status": "Active", "end_date": ("<", date)}, fields=["name", "client", "auto_renew"]), "Membership expiry", end_membership)
-	each(frappe.get_all("Spa Membership", filters={"docstatus": 1, "status": "Active"}, pluck="name"), "Entitlement rollover", roll_entitlements)
+	each(
+		frappe.get_all(
+			"Spa Membership",
+			filters={"docstatus": 1, "status": "Active", "end_date": ("<", date)},
+			fields=["name", "client", "auto_renew"],
+		),
+		"Membership expiry",
+		end_membership,
+	)
+	each(
+		frappe.get_all("Spa Membership", filters={"docstatus": 1, "status": "Active"}, pluck="name"),
+		"Entitlement rollover",
+		roll_entitlements,
+	)
 
 
 def renew(name):
 	old = frappe.get_doc("Spa Membership", name)
-	new = frappe.get_doc({
-		"doctype": "Spa Membership", "client": old.client, "plan": old.plan, "branch": old.branch, "start_date": old.end_date,
-		"auto_renew": 1, "renewed_from": old.name, "mode_of_payment": old.mode_of_payment,
-	})
+	new = frappe.get_doc(
+		{
+			"doctype": "Spa Membership",
+			"client": old.client,
+			"plan": old.plan,
+			"branch": old.branch,
+			"start_date": old.end_date,
+			"auto_renew": 1,
+			"renewed_from": old.name,
+			"mode_of_payment": old.mode_of_payment,
+		}
+	)
 	new.flags.ignore_permissions = True
 	new.insert(ignore_permissions=True)
 	new.submit()
@@ -89,7 +139,16 @@ def roll_entitlements(name):
 			latest[row.service] = row
 	for row in latest.values():
 		if getdate(row.period_end) < date:
-			new = doc.append("entitlements", {"service": row.service, "period_start": row.period_end, "period_end": add_months(row.period_end, 1), "sessions_allowed": row.sessions_allowed, "sessions_used": 0})
+			new = doc.append(
+				"entitlements",
+				{
+					"service": row.service,
+					"period_start": row.period_end,
+					"period_end": add_months(row.period_end, 1),
+					"sessions_allowed": row.sessions_allowed,
+					"sessions_used": 0,
+				},
+			)
 			new.db_insert()
 
 
@@ -100,12 +159,20 @@ def daily_greetings():
 		WHERE marketing_consent = 1 AND status = 'Active' AND IFNULL(email, '') != ''
 		AND ((MONTH(date_of_birth) = %(m)s AND DAY(date_of_birth) = %(d)s)
 		OR (MONTH(anniversary_date) = %(m)s AND DAY(anniversary_date) = %(d)s))""",
-		{"m": date.month, "d": date.day}, as_dict=True,
+		{"m": date.month, "d": date.day},
+		as_dict=True,
 	)
 
 	def greet(row):
-		birthday = row.date_of_birth and (row.date_of_birth.month, row.date_of_birth.day) == (date.month, date.day)
+		birthday = row.date_of_birth and (row.date_of_birth.month, row.date_of_birth.day) == (
+			date.month,
+			date.day,
+		)
 		occasion = "Happy birthday" if birthday else "Happy anniversary"
-		frappe.sendmail(recipients=[row.email], subject=f"{occasion} from Biz Spa", message=f"{occasion}, {row.client_name}!")
+		frappe.sendmail(
+			recipients=[row.email],
+			subject=f"{occasion} from Biz Spa",
+			message=f"{occasion}, {row.client_name}!",
+		)
 
 	each(clients, "Greeting", greet)
